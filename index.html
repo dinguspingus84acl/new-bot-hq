@@ -326,16 +326,28 @@ footer {
   </footer>
 </div>
 <script>
-const CREW = {
-  deep:    { runner: "assets/runners/mira.png",    creature: "assets/creatures/voltbug.png",   creatureName: "Voltbug",   species: "spark beetle" },
-  cluster: { runner: "assets/runners/kai.png",     creature: "assets/creatures/foldfox.png",   creatureName: "Foldfox",   species: "origami fox" },
-  watch:   { runner: "assets/runners/oak.png",     creature: "assets/creatures/scanslime.png", creatureName: "Scanslime", species: "lens slime" },
-  lab:     { runner: "assets/runners/rex.png",     creature: "assets/creatures/archivowl.png", creatureName: "Archivowl", species: "archive owl" },
-  coord:   { runner: "assets/runners/newbot.png",  creature: "assets/creatures/bunbot.png",    creatureName: "Bunbot",    species: "bunny-bot" }
+const CREATURES = {
+  voltbug:   { file: "assets/creatures/voltbug.png",   name: "Voltbug",   species: "spark beetle" },
+  foldfox:   { file: "assets/creatures/foldfox.png",   name: "Foldfox",   species: "origami fox" },
+  scanslime: { file: "assets/creatures/scanslime.png", name: "Scanslime", species: "lens slime" },
+  archivowl: { file: "assets/creatures/archivowl.png", name: "Archivowl", species: "archive owl" },
+  bunbot:    { file: "assets/creatures/bunbot.png",    name: "Bunbot",    species: "bunny-bot" }
 };
-const FALLBACK_CREW = [
-  CREW.deep, CREW.cluster, CREW.watch, CREW.lab, CREW.coord
-];
+const RUNNERS = {
+  deep: "assets/runners/mira.png",
+  cluster: "assets/runners/kai.png",
+  watch: "assets/runners/oak.png",
+  lab: "assets/runners/rex.png",
+  coord: "assets/runners/newbot.png"
+};
+const DEFAULT_CREATURE = {
+  deep: "scanslime",
+  cluster: "foldfox",
+  watch: "voltbug",
+  lab: "archivowl",
+  coord: "bunbot"
+};
+const FALLBACK_IDS = ["mira", "kai", "oak", "rex", "newbot"];
 const DESKS = [
   { x: 27.2, y: 58.5, face: "right" },
   { x: 40.0, y: 33.2, face: "right" },
@@ -351,7 +363,15 @@ const PATHS = [
 const pathIndex = {};
 
 function crewFor(station, idx) {
-  return CREW[station.id] || FALLBACK_CREW[idx % FALLBACK_CREW.length];
+  const cid = station.creature_id || DEFAULT_CREATURE[station.id] || Object.keys(CREATURES)[idx % 5];
+  const creature = CREATURES[cid] || CREATURES.bunbot;
+  const runner = RUNNERS[station.id] || ("assets/runners/" + (FALLBACK_IDS[idx % FALLBACK_IDS.length]) + ".png");
+  return {
+    runner: runner,
+    creature: creature.file,
+    creatureName: station.creature || creature.name,
+    species: station.creature_species || creature.species
+  };
 }
 function deskFor(station, idx) {
   const n = Number.isFinite(station.desk) ? station.desk : idx;
