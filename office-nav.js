@@ -10,30 +10,30 @@
   const NATIVE_H = 720;
 
   const NODES = {
-    hub: { x: 45.0, y: 76.0 },
-    mid: { x: 45.0, y: 64.0 },
+    hub: { x: 45.0, y: 80.0 },
+    mid: { x: 45.0, y: 68.0 },
     gap: { x: 45.0, y: 52.0 },
     cross: { x: 45.0, y: 44.0 },
-    west: { x: 20.5, y: 76.0 },
-    east: { x: 72.0, y: 76.0 },
+    west: { x: 20.0, y: 80.0 },
+    east: { x: 73.0, y: 80.0 },
     nw: { x: 30.0, y: 44.0 },
     ne: { x: 68.0, y: 44.0 },
-    report: { x: 45.0, y: 67.5 },
-    report_b: { x: 41.6, y: 70.0 },
-    report_c: { x: 48.4, y: 70.0 },
+    report: { x: 45.0, y: 72.0 },
+    report_b: { x: 41.4, y: 74.5 },
+    report_c: { x: 48.6, y: 74.5 },
     lounge: { x: 17.5, y: 34.5 },
     lounge_ap: { x: 22.5, y: 43.0 },
 
-    coord_ap: { x: 27.6, y: 69.0 },
-    coord: { x: 27.6, y: 59.8, face: "right", home: true },
+    coord_ap: { x: 31.8, y: 76.2 },
+    coord: { x: 31.8, y: 69.2, face: "right", home: true },
     deep_ap: { x: 39.8, y: 43.6 },
     deep: { x: 39.8, y: 35.2, face: "right", home: true },
     cluster_ap: { x: 55.4, y: 43.6 },
     cluster: { x: 55.4, y: 33.6, face: "left", home: true },
     watch_ap: { x: 71.2, y: 43.6 },
     watch: { x: 71.2, y: 33.8, face: "left", home: true },
-    lab_ap: { x: 63.0, y: 68.4 },
-    lab: { x: 63.0, y: 57.6, face: "left", home: true }
+    lab_ap: { x: 60.6, y: 76.0 },
+    lab: { x: 60.6, y: 69.0, face: "left", home: true }
   };
 
   const EDGES = [
@@ -68,8 +68,8 @@
     coord: {
       seat: "coord",
       approach: "coord_ap",
-      companion: { dx: 2.05, dy: 1.9 },
-      overflow: { dx: 3.4, dy: 3.2 },
+      companion: { dx: 2.8, dy: 2.3 },
+      overflow: { dx: 4.2, dy: 3.6 },
       face: "right"
     },
     deep: {
@@ -96,8 +96,8 @@
     lab: {
       seat: "lab",
       approach: "lab_ap",
-      companion: { dx: -2.05, dy: 1.9 },
-      overflow: { dx: -3.4, dy: 3.2 },
+      companion: { dx: -2.8, dy: 2.3 },
+      overflow: { dx: -4.2, dy: 3.6 },
       face: "left"
     }
   };
