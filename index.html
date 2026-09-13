@@ -349,16 +349,16 @@ const DEFAULT_CREATURE = {
 };
 const FALLBACK_IDS = ["mira", "kai", "oak", "rex", "newbot"];
 const DESKS = [
-  { x: 27.2, y: 58.5, face: "right" },
-  { x: 40.0, y: 33.2, face: "right" },
-  { x: 55.8, y: 31.4, face: "left" },
-  { x: 72.4, y: 31.4, face: "left" },
-  { x: 63.8, y: 56.2, face: "left" }
+  { x: 27.6, y: 59.8, face: "right", cx: 7.2, cy: 2.2 },
+  { x: 39.8, y: 35.2, face: "right", cx: 6.2, cy: 2.0 },
+  { x: 55.4, y: 33.6, face: "left",  cx: 6.0, cy: 1.6 },
+  { x: 71.2, y: 33.8, face: "left",  cx: -6.6, cy: 2.4 },
+  { x: 63.0, y: 57.6, face: "left",  cx: 7.4, cy: 3.0 }
 ];
 const PATHS = [
-  [{x:42,y:50},{x:50,y:64},{x:58,y:49},{x:46,y:72}],
-  [{x:36,y:60},{x:48,y:52},{x:61,y:61},{x:52,y:70}],
-  [{x:44,y:46},{x:54,y:68},{x:38,y:66},{x:60,y:54}]
+  [{x:43,y:48},{x:49,y:63},{x:46,y:52},{x:50,y:68}],
+  [{x:40,y:58},{x:48,y:50},{x:44,y:66},{x:51,y:56}],
+  [{x:46,y:47},{x:42,y:62},{x:50,y:54},{x:45,y:70}]
 ];
 const pathIndex = {};
 
@@ -407,13 +407,13 @@ function makeCritter(station, idx) {
   el.className = "actor critter " + (station.state || "idle");
   el.dataset.id = "c-" + station.id;
   el.innerHTML = '<img alt="' + crew.creatureName + '" src="' + crew.creature + '" />';
-  setPos(el, desk.x + 6.4, desk.y + 1.2);
+  setPos(el, desk.x + desk.cx, desk.y + desk.cy);
   return el;
 }
 function wander(el, pathIdx, followEl) {
   if (followEl) {
-    const x = parseFloat(followEl.style.left) + 6.2;
-    const y = parseFloat(followEl.style.top) + 1.0;
+    const x = parseFloat(followEl.style.left) + 6.0;
+    const y = parseFloat(followEl.style.top) + 1.4;
     const fromX = parseFloat(el.style.left);
     faceToward(el, fromX, x, "right");
     setPos(el, x, y);
@@ -428,7 +428,7 @@ function wander(el, pathIdx, followEl) {
 }
 function park(el, station, idx, kind) {
   const desk = deskFor(station, idx);
-  if (kind === "critter") setPos(el, desk.x + 6.4, desk.y + 1.2);
+  if (kind === "critter") setPos(el, desk.x + desk.cx, desk.y + desk.cy);
   else {
     setPos(el, desk.x, desk.y);
     faceToward(el, desk.x, desk.x + (desk.face === "left" ? -1 : 1), desk.face);
