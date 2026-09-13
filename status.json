@@ -1,0 +1,77 @@
+{
+  "schema": "rclab.office_dashboard.v1",
+  "updated_at_utc": "2026-09-13T20:39:00Z",
+  "bot_name": "New Bot",
+  "mode": "PAPER_RESEARCH_ONLY",
+  "office_mood": "busy",
+  "stations": [
+    {
+      "id": "deep",
+      "character": "Mira",
+      "role": "Forensics lead",
+      "emoji": "🕵️",
+      "color": "#7dd3fc",
+      "task": "Deep analysis — 5 watchlist tokens",
+      "stage": "Digging holders, big sellers, liquidity",
+      "progress": 0.55,
+      "state": "working",
+      "desk": 1
+    },
+    {
+      "id": "cluster",
+      "character": "Kai Desk",
+      "role": "Cluster analyst",
+      "emoji": "🧩",
+      "color": "#c4b5fd",
+      "task": "Early-buyer cluster module (Kaishen-style)",
+      "stage": "Building scanner + watchlist demo",
+      "progress": 0.45,
+      "state": "working",
+      "desk": 2
+    },
+    {
+      "id": "watch",
+      "character": "Oak",
+      "role": "Watch floor",
+      "emoji": "👀",
+      "color": "#86efac",
+      "task": "Paper watchlist ($bucket $Many $route $par $raxol)",
+      "stage": "Idle — waiting for next dig / digest",
+      "progress": 1.0,
+      "state": "idle",
+      "desk": 3
+    },
+    {
+      "id": "lab",
+      "character": "Rex",
+      "role": "Lab archivist",
+      "emoji": "📚",
+      "color": "#fcd34d",
+      "task": "Alpha lab run rclab-…a8c7cb68",
+      "stage": "Phases 0–10 parked · archive live",
+      "progress": 1.0,
+      "state": "idle",
+      "desk": 4
+    },
+    {
+      "id": "coord",
+      "character": "New Bot",
+      "role": "Floor lead",
+      "emoji": "🤖",
+      "color": "#fda4af",
+      "task": "Ship office board to GitHub Pages",
+      "stage": "Pushing index + status to dinguspingus84acl/new-bot-hq",
+      "progress": 0.9,
+      "state": "working",
+      "desk": 0
+    }
+  ],
+  "ticker": [
+    "Publishing New Bot HQ to GitHub Pages",
+    "Custom domain is yours to attach in Pages settings",
+    "Deep dive + early-buyer cluster still running",
+    "No trade alerts — paper only"
+  ],
+  "hosted_on": "github-pages",
+  "repo": "dinguspingus84acl/new-bot-hq"
+}

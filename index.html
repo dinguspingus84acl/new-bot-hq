@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>New Bot HQ — Paper Research Office</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --panel: #141a2e;
+    --ink: #e8eefc;
+    --muted: #93a0c2;
+    --good: #4ade80;
+    --work: #60a5fa;
+    --idle: #64748b;
+    --warn: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: ui-rounded, "Segoe UI", system-ui, sans-serif;
+    background: radial-gradient(1200px 600px at 20% -10%, #1e1b4b, transparent),
+                radial-gradient(900px 500px at 100% 0%, #14532d33, transparent),
+                var(--bg);
+    color: var(--ink); min-height: 100vh;
+  }
+  header {
+    padding: 20px 24px 8px; display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;
+  }
+  header h1 { margin: 0; font-size: 1.45rem; letter-spacing: 0.02em; }
+  header .meta { color: var(--muted); font-size: 0.9rem; }
+  .hero {
+    margin: 8px 24px 16px; border-radius: 16px; overflow: hidden;
+    border: 1px solid #334155; box-shadow: 0 20px 50px #0006;
+  }
+  .hero img { display: block; width: 100%; height: auto; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700;
+    background: #14532d55; color: var(--good); border: 1px solid #22c55e55;
+  }
+  .floor {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px; padding: 0 24px 28px;
+  }
+  .desk {
+    background: linear-gradient(180deg, #1a223a, var(--panel));
+    border: 1px solid #334155; border-radius: 18px; padding: 16px;
+    position: relative; overflow: hidden; min-height: 210px;
+  }
+  .desk.working { box-shadow: 0 0 0 1px #60a5fa55, 0 12px 30px #0005; }
+  .desk.idle { opacity: 0.88; }
+  .desk.done { box-shadow: 0 0 0 1px #4ade8055; }
+  .avatar {
+    width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center;
+    font-size: 1.7rem; margin-bottom: 10px; border: 2px solid #0003;
+  }
+  .name { font-weight: 800; font-size: 1.05rem; }
+  .role { color: var(--muted); font-size: 0.8rem; margin-bottom: 10px; }
+  .task { font-size: 0.92rem; margin: 0 0 6px; }
+  .stage { color: var(--muted); font-size: 0.82rem; min-height: 2.4em; }
+  .bar {
+    height: 10px; background: #0f172a; border-radius: 999px; overflow: hidden; margin-top: 12px;
+    border: 1px solid #334155;
+  }
+  .bar > i {
+    display: block; height: 100%; width: 0%;
+    background: linear-gradient(90deg, #38bdf8, #a78bfa);
+    transition: width 0.6s ease;
+  }
+  .state-pill {
+    position: absolute; top: 14px; right: 14px;
+    font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 4px 8px; border-radius: 999px;
+  }
+  .state-working { background: #1d4ed855; color: #93c5fd; }
+  .state-idle { background: #33415588; color: #cbd5e1; }
+  .state-done { background: #14532d88; color: #86efac; }
+  .state-blocked { background: #7c2d1288; color: #fdba74; }
+  .ticker {
+    margin: 0 24px 24px; padding: 12px 16px; border-radius: 12px;
+    background: #0f172a; border: 1px dashed #475569; color: var(--muted); font-size: 0.9rem;
+  }
+  footer { padding: 0 24px 28px; color: #64748b; font-size: 0.78rem; }
+  .bob { animation: bob 1.2s ease-in-out infinite; display: inline-block; }
+  @keyframes bob { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-4px);} }
+  .typing::after { content: "▋"; animation: blink 1s step-end infinite; margin-left: 2px; color: #93c5fd; }
+  @keyframes blink { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="badge">PAPER RESEARCH ONLY</div>
+      <h1>New Bot HQ</h1>
+      <div class="meta">Live office floor · updates from <code>status.json</code> · <span id="updated">…</span></div>
+    </div>
+  </header>
+  <div class="hero" id="heroWrap"><img src="office-hero.png" alt="Pixel office crew at work" onerror="this.parentElement.style.display='none'" /></div>
+  <div class="ticker" id="ticker">Loading floor chatter…</div>
+  <div class="floor" id="floor"></div>
+  <footer>
+    Characters map to real workstreams. Auto-refreshes every 3s from status.json.
+    No trades. No keys on the wall.
+  </footer>
+<script>
+async function load() {
+  try {
+    const res = await fetch('status.json?ts=' + Date.now());
+    const data = await res.json();
+    document.getElementById('updated').textContent = 'updated ' + (data.updated_at_utc || '?');
+    const floor = document.getElementById('floor');
+    floor.innerHTML = '';
+    (data.stations || []).sort((a,b)=>(a.desk??9)-(b.desk??9)).forEach(s => {
+      const el = document.createElement('article');
+      el.className = 'desk ' + (s.state || 'idle');
+      const pct = Math.round(100 * (s.progress || 0));
+      const working = s.state === 'working';
+      el.innerHTML = `
+        <div class="state-pill state-${s.state||'idle'}">${s.state||'idle'}</div>
+        <div class="avatar" style="background:${s.color||'#334155'}33;border-color:${s.color||'#64748b'}">
+          <span class="${working?'bob':''}">${s.emoji||'🙂'}</span>
+        </div>
+        <div class="name">${s.character||'Agent'}</div>
+        <div class="role">${s.role||''}</div>
+        <p class="task ${working?'typing':''}">${s.task||''}</p>
+        <div class="stage">${s.stage||''}</div>
+        <div class="bar"><i style="width:${pct}%;background:linear-gradient(90deg,${s.color||'#38bdf8'},#a78bfa)"></i></div>
+        <div class="role" style="margin-top:8px">${pct}%</div>
+      `;
+      floor.appendChild(el);
+    });
+    const lines = data.ticker || [];
+    if (lines.length) {
+      const i = Math.floor(Date.now()/4000) % lines.length;
+      document.getElementById('ticker').textContent = '💬 ' + lines[i];
+    }
+  } catch (e) {
+    document.getElementById('ticker').textContent = 'Could not load status.json.';
+  }
+}
+load();
+setInterval(load, 3000);
+</script>
+</body>
+</html>
