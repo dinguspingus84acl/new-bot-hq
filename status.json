@@ -1,1 +1,23 @@
-PLACEHOLDER
+{
+  "schema": "rclab.office_dashboard.v1",
+  "updated_at_utc": "2026-09-13T21:02:00Z",
+  "bot_name": "New Bot",
+  "mode": "PAPER_RESEARCH_ONLY",
+  "office_mood": "chaotic_cute",
+  "domain": "grokbottech.com",
+  "repo": "dinguspingus84acl/new-bot-hq",
+  "hosted_on": "github-pages",
+  "stations": [
+    {"id":"coord","character":"New Bot","role":"Floor lead","emoji":"🤖","color":"#fda4af","task":"Office floor glow-up","stage":"Animated runners + critters shipping","progress":0.95,"state":"working","desk":0,"creature":"Bunbot","creature_id":"bunbot","creature_species":"floor bunny-bot"},
+    {"id":"deep","character":"Mira","role":"Forensics lead","emoji":"🕵️","color":"#7dd3fc","task":"Deep analysis — 5 watchlist tokens","stage":"Digging holders, big sellers, liquidity","progress":0.55,"state":"working","desk":1,"creature":"Scanslime","creature_id":"scanslime","creature_species":"probe slime"},
+    {"id":"cluster","character":"Kai Desk","role":"Cluster analyst","emoji":"🧩","color":"#c4b5fd","task":"Early-buyer cluster module (Kaishen-style)","stage":"Building scanner + watchlist demo","progress":0.45,"state":"working","desk":2,"creature":"Foldfox","creature_id":"foldfox","creature_species":"origami fox"},
+    {"id":"watch","character":"Oak","role":"Watch floor","emoji":"👀","color":"#86efac","task":"Paper watchlist ($bucket $Many $route $par $raxol)","stage":"Idle — waiting for next dig / digest","progress":1.0,"state":"idle","desk":3,"creature":"Voltbug","creature_id":"voltbug","creature_species":"spark beetle"},
+    {"id":"lab","character":"Rex","role":"Lab archivist","emoji":"📚","color":"#fcd34d","task":"Alpha lab run rclab-…a8c7cb68","stage":"Phases 0–10 parked · archive live","progress":1.0,"state":"idle","desk":4,"creature":"Archivowl","creature_id":"archivowl","creature_species":"ledger owl"}
+  ],
+  "ticker": [
+    "Restoring desks + shipping animated floor",
+    "Voltbug · Foldfox · Scanslime · Archivowl · Bunbot",
+    "Deep dive + cluster still cooking",
+    "Paper only — no trades"
+  ]
+}
