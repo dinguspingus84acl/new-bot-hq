@@ -121,7 +121,7 @@ header.top h1 {
   filter: drop-shadow(0 10px 8px rgba(0, 0, 0, 0.55));
   transition: left 2.7s linear, top 2.7s linear;
 }
-.runner { width: 72px; height: 100px; }
+.runner { width: 86px; height: 118px; }
 .critter { width: 68px; height: 68px; z-index: 4; transition-duration: 3.1s; transition-timing-function: ease-in-out; }
 .actor img {
   display: block;
@@ -299,7 +299,7 @@ footer {
 }
 @keyframes twinkle { 50% { opacity: 0.2; transform: translateX(-50%) translateY(-4px); } }
 @media (max-width: 720px) {
-  .runner { width: 58px; height: 80px; }
+  .runner { width: 66px; height: 90px; }
   .critter { width: 50px; height: 50px; }
   header.top h1 { font-size: 1.25rem; }
 }
@@ -337,12 +337,13 @@ const CREATURES = {
   archivowl: { file: "assets/creatures/archivowl.png", name: "Archivowl", species: "archive owl" },
   bunbot:    { file: "assets/creatures/bunbot.png",    name: "Bunbot",    species: "bunny-bot" }
 };
+const RUNNER_VER = "sheet2";
 const RUNNERS = {
-  deep: "assets/runners/mira.png",
-  cluster: "assets/runners/kai.png",
-  watch: "assets/runners/oak.png",
-  lab: "assets/runners/rex.png",
-  coord: "assets/runners/newbot.png"
+  deep: "assets/runners/mira.png?" + RUNNER_VER,
+  cluster: "assets/runners/kai.png?" + RUNNER_VER,
+  watch: "assets/runners/oak.png?" + RUNNER_VER,
+  lab: "assets/runners/rex.png?" + RUNNER_VER,
+  coord: "assets/runners/newbot.png?" + RUNNER_VER
 };
 const DEFAULT_CREATURE = {
   deep: "scanslime",
@@ -369,7 +370,7 @@ const pathIndex = {};
 function crewFor(station, idx) {
   const cid = station.creature_id || DEFAULT_CREATURE[station.id] || Object.keys(CREATURES)[idx % 5];
   const creature = CREATURES[cid] || CREATURES.bunbot;
-  const runner = RUNNERS[station.id] || ("assets/runners/" + (FALLBACK_IDS[idx % FALLBACK_IDS.length]) + ".png");
+  const runner = RUNNERS[station.id] || ("assets/runners/" + (FALLBACK_IDS[idx % FALLBACK_IDS.length]) + ".png?" + RUNNER_VER);
   return {
     runner: runner,
     creature: creature.file,
