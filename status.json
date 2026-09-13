@@ -1,6 +1,6 @@
 {
   "schema": "rclab.office_dashboard.v1",
-  "updated_at_utc": "2026-09-13T20:39:00Z",
+  "updated_at_utc": "2026-09-13T20:40:30Z",
   "bot_name": "New Bot",
   "mode": "PAPER_RESEARCH_ONLY",
   "office_mood": "busy",
@@ -59,18 +59,18 @@
       "role": "Floor lead",
       "emoji": "🤖",
       "color": "#fda4af",
-      "task": "Ship office board to GitHub Pages",
-      "stage": "Pushing index + status to dinguspingus84acl/new-bot-hq",
-      "progress": 0.9,
-      "state": "working",
+      "task": "Office board on GitHub",
+      "stage": "Repo live — enable Pages + add your domain",
+      "progress": 1.0,
+      "state": "done",
       "desk": 0
     }
   ],
   "ticker": [
-    "Publishing New Bot HQ to GitHub Pages",
-    "Custom domain is yours to attach in Pages settings",
-    "Deep dive + early-buyer cluster still running",
-    "No trade alerts — paper only"
+    "Repo: dinguspingus84acl/new-bot-hq",
+    "Enable Pages (GitHub Actions), then add custom domain",
+    "Deep dive + cluster still cooking",
+    "Paper only — no trades"
   ],
   "hosted_on": "github-pages",
   "repo": "dinguspingus84acl/new-bot-hq"
