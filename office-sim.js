@@ -152,6 +152,7 @@
       vx: 0,
       vy: 0,
       followT: 0,
+      foot: 0,
       idlePhase: Math.random() * 8,
       idleNext: 2.5 + Math.random() * 5,
       semantic: N.normalizeStation(station),
@@ -168,7 +169,8 @@
     actor.el.style.zIndex = String(zFromY(actor.y));
     const flip = actor.face === "left" ? -1 : 1;
     const bob = Math.round(actor.bob);
-    actor.sprite.style.transform = "translateY(" + bob + "px) scaleX(" + flip + ")";
+    const foot = actor.foot ? (flip < 0 ? -1 : 1) : 0;
+    actor.sprite.style.transform = "translate(" + foot + "px," + bob + "px) scaleX(" + flip + ")";
     if (instant) actor.el.style.transition = "none";
   }
 
@@ -201,15 +203,12 @@
     else actor.el.classList.add("cue-idle");
   }
 
-  function hideBubble(id, immediate) {
+  function hideBubble(id) {
     const b = document.getElementById("speech-" + id);
     if (!b) return;
-    if (immediate) {
-      b.classList.remove("show");
-      b.style.opacity = "0";
-      return;
-    }
     b.classList.remove("show");
+    b.style.opacity = "";
+    clearTimeout(b._hide);
   }
 
   function placeBubble(id) {
@@ -217,32 +216,37 @@
     const actor = sim.actors.get(id);
     if (!b || !actor) return;
     const sz = stageSize();
-    const stage = stageEl().getBoundingClientRect();
-    const headX = (actor.x / 100) * sz.w;
-    const headY = (actor.y / 100) * sz.h - (actor.kind === "runner" ? 108 : 64);
+    const foot = pctToStage(actor, sz);
+    const h = actor.el.offsetHeight || (actor.kind === "runner" ? 118 : 58);
     const bw = b.offsetWidth || 140;
     const bh = b.offsetHeight || 40;
-    let x = headX;
-    let y = headY - 12;
+    let x = foot.x;
+    let y = foot.y - h + 12;
     let side = "above";
     if (y - bh < 8) {
-      y = headY + 28;
+      y = foot.y + 16;
       side = "below";
     }
-    if (x - bw / 2 < 8) x = 8 + bw / 2;
-    if (x + bw / 2 > sz.w - 8) x = sz.w - 8 - bw / 2;
+    if (x + bw / 2 > sz.w - 10) {
+      x = foot.x - 36;
+      side = "left";
+    } else if (x - bw / 2 < 10) {
+      x = foot.x + 36;
+      side = "right";
+    }
+    x = N.clamp(x, 10 + bw / 2, sz.w - 10 - bw / 2);
+    y = N.clamp(y, 12, sz.h - 8);
     const others = document.querySelectorAll(".speech.show");
     others.forEach((o) => {
       if (o === b) return;
       const ox = parseFloat(o.dataset.x || "0");
-      if (Math.abs(ox - x) < 90) x = N.clamp(x + (x < ox ? -70 : 70), 16 + bw / 2, sz.w - 16 - bw / 2);
+      if (Math.abs(ox - x) < 90) x = N.clamp(x + (x < ox ? -64 : 64), 16 + bw / 2, sz.w - 16 - bw / 2);
     });
     b.dataset.x = String(x);
     b.style.zIndex = String(zFromY(actor.y) + 8);
-    b.style.transform = "translate3d(" + Math.round(x) + "px," + Math.round(y) + "px,0) translate(-50%,-100%) scale(" + (b.classList.contains("show") ? 1 : 0.88) + ")";
+    const scale = b.classList.contains("show") ? 1 : 0.88;
+    b.style.transform = "translate3d(" + Math.round(x) + "px," + Math.round(y) + "px,0) translate(-50%,-100%) scale(" + scale + ")";
     b.dataset.side = side;
-    b.style.setProperty("--tail", side === "below" ? "180deg" : "0deg");
-    void stage;
   }
 
   function showBubble(id, text, persist) {
@@ -264,10 +268,8 @@
     }
     placeBubble(id);
     requestAnimationFrame(() => {
-      placeBubble(id);
       b.classList.add("show");
-      b.style.opacity = "1";
-      b.style.transform = b.style.transform.replace("scale(0.88)", "scale(1)");
+      placeBubble(id);
     });
     clearTimeout(b._hide);
     if (!persist) {
@@ -402,7 +404,20 @@
         if (actor.mode === STATES.TALK) {
           setMode(actor, restMode(state));
         }
-      }, 900);
+        if (after.thenHome && actor.kind === "runner") {
+          startPair(actor.stationId, actor.stationId, {
+            state: state,
+            look: (N.STATIONS[actor.stationId] || {}).face
+          }, 80);
+        }
+      }, 1100);
+      return;
+    }
+    if (after.thenHome && actor.kind === "runner") {
+      startPair(actor.stationId, actor.stationId, {
+        state: state,
+        look: (N.STATIONS[actor.stationId] || {}).face
+      }, 80);
       return;
     }
     if (state === "done" && after.celebrate && actor.kind === "runner") {
@@ -651,18 +666,10 @@
       startPair("coord", "report", {
         state: "working",
         look: "right",
-        talk: lead.stage || "Coordinate + report"
+        talk: lead.stage || "Coordinate + report",
+        thenHome: true
       }, 0);
-      setTimeout(() => {
-        const r = runnerOf("coord");
-        if (!r) return;
-        startPair("coord", "coord", {
-          state: "working",
-          look: "right",
-          talk: ""
-        }, 80);
-      }, 5200);
-    }, 2200);
+    }, 1600);
   }
 
   function ingest(data, fromPoll) {
@@ -754,8 +761,9 @@
         actor.heading = pt.heading;
       }
       actor.face = N.faceFromHeading(pt.heading, actor.face);
-      const step = Math.floor(actor.walkT / 0.18) % 2;
+      const step = Math.floor(actor.walkT / 0.16) % 2;
       actor.bob = actor.kind === "runner" ? (step ? -2 : 0) : (step ? -1 : 0);
+      actor.foot = actor.kind === "runner" && step ? 1 : 0;
       applyPose(actor);
       if (actor.walkT >= actor.plan.T) {
         const end = actor.path[actor.path.length - 1];
@@ -839,11 +847,15 @@
         const a = list[i];
         const b = list[j];
         if (a.mode !== STATES.WALK && b.mode !== STATES.WALK) continue;
-        const d = N.dist(a, b);
+        const pa = N.nativeOf(a);
+        const pb = N.nativeOf(b);
+        const dx = pb.x - pa.x;
+        const dy = pb.y - pa.y;
+        const d = Math.hypot(dx, dy);
         if (d >= SEPARATION_PX || d < 0.2) continue;
         const push = (SEPARATION_PX - d) / 2;
-        const hx = (b.x - a.x) / (d || 1);
-        const hy = (b.y - a.y) / (d || 1);
+        const hx = dx / d;
+        const hy = dy / d;
         if (a.mode === STATES.WALK) {
           a.x -= (hx * push * 100) / N.NATIVE_W;
           a.y -= (hy * push * 100) / N.NATIVE_H;
