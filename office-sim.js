@@ -5,19 +5,19 @@
   if (!N) throw new Error("OfficeNav missing");
 
   const CREATURES = {
-    voltbug: { file: "assets/creatures/voltbug.png", name: "Voltbug", species: "spark beetle", idle: "spark" },
-    foldfox: { file: "assets/creatures/foldfox.png", name: "Foldfox", species: "origami fox", idle: "flick" },
-    scanslime: { file: "assets/creatures/scanslime.png", name: "Scanslime", species: "lens slime", idle: "hover" },
-    archivowl: { file: "assets/creatures/archivowl.png", name: "Archivowl", species: "archive owl", idle: "blink" },
-    bunbot: { file: "assets/creatures/bunbot.png", name: "Bunbot", species: "bunny-bot", idle: "twitch" }
+    voltbug: { file: "assets/voltbug.png?final", name: "Voltbug", species: "spark beetle", idle: "spark" },
+    foldfox: { file: "assets/foldfox.png?final", name: "Foldfox", species: "origami fox", idle: "flick" },
+    scanslime: { file: "assets/scanslime.png?final", name: "Scanslime", species: "lens slime", idle: "hover" },
+    archivowl: { file: "assets/archivowl.png?final", name: "Archivowl", species: "archive owl", idle: "blink" },
+    bunbot: { file: "assets/bunbot.png?final", name: "Bunbot", species: "bunny-bot", idle: "twitch" }
   };
-  const RUNNER_VER = "sheet2";
+  const ASSET_VER = "final";
   const RUNNERS = {
-    deep: "assets/runners/mira.png?" + RUNNER_VER,
-    cluster: "assets/runners/kai.png?" + RUNNER_VER,
-    watch: "assets/runners/oak.png?" + RUNNER_VER,
-    lab: "assets/runners/rex.png?" + RUNNER_VER,
-    coord: "assets/runners/newbot.png?" + RUNNER_VER
+    coord: "assets/runner-coord.png?" + ASSET_VER,
+    deep: "assets/runner-deep.png?" + ASSET_VER,
+    cluster: "assets/runner-cluster.png?" + ASSET_VER,
+    watch: "assets/runner-watch.png?" + ASSET_VER,
+    lab: "assets/runner-lab.png?" + ASSET_VER
   };
   const DEFAULT_CREATURE = {
     deep: "scanslime",
@@ -26,7 +26,7 @@
     lab: "archivowl",
     coord: "bunbot"
   };
-  const FALLBACK_IDS = ["mira", "kai", "oak", "rex", "newbot"];
+  const FALLBACK_IDS = ["coord", "deep", "cluster", "watch", "lab"];
 
   const STATES = {
     IDLE: "IDLE",
@@ -49,12 +49,13 @@
   const stageEl = () => document.getElementById("stage");
   const sceneEl = () => document.getElementById("scene");
 
-  const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduceMotion = () =>
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches || /(?:\?|&)motion=reduce(?:&|$)/.test(location.search);
 
   function crewFor(station, idx) {
     const cid = station.creature_id || DEFAULT_CREATURE[station.id] || Object.keys(CREATURES)[idx % 5];
     const creature = CREATURES[cid] || CREATURES.bunbot;
-    const runner = RUNNERS[station.id] || "assets/runners/" + FALLBACK_IDS[idx % FALLBACK_IDS.length] + ".png?" + RUNNER_VER;
+    const runner = RUNNERS[station.id] || "assets/runner-" + FALLBACK_IDS[idx % FALLBACK_IDS.length] + ".png?" + ASSET_VER;
     return {
       runner,
       creature: creature.file,
