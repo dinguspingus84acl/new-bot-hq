@@ -121,7 +121,7 @@ header.top h1 {
   filter: drop-shadow(0 10px 8px rgba(0, 0, 0, 0.55));
   transition: left 2.7s linear, top 2.7s linear;
 }
-.runner { width: 76px; height: 104px; }
+.runner { width: 72px; height: 100px; }
 .critter { width: 68px; height: 68px; z-index: 4; transition-duration: 3.1s; transition-timing-function: ease-in-out; }
 .actor img {
   display: block;
@@ -130,6 +130,10 @@ header.top h1 {
   object-fit: contain;
   user-select: none;
   pointer-events: none;
+}
+.runner img {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 .actor.face-left img { transform: scaleX(-1); }
 .runner.working img { animation: walk-bob 0.36s ease-in-out infinite; }
