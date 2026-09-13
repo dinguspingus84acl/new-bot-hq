@@ -3,143 +3,82 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>New Bot HQ — Paper Research Office</title>
+<title>New Bot HQ — Live Office</title>
 <style>
-  :root {
-    --bg: #0b1020;
-    --panel: #141a2e;
-    --ink: #e8eefc;
-    --muted: #93a0c2;
-    --good: #4ade80;
-    --work: #60a5fa;
-    --idle: #64748b;
-    --warn: #fbbf24;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; font-family: ui-rounded, "Segoe UI", system-ui, sans-serif;
-    background: radial-gradient(1200px 600px at 20% -10%, #1e1b4b, transparent),
-                radial-gradient(900px 500px at 100% 0%, #14532d33, transparent),
-                var(--bg);
-    color: var(--ink); min-height: 100vh;
-  }
-  header {
-    padding: 20px 24px 8px; display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;
-  }
-  header h1 { margin: 0; font-size: 1.45rem; letter-spacing: 0.02em; }
-  header .meta { color: var(--muted); font-size: 0.9rem; }
-  .hero {
-    margin: 8px 24px 16px; border-radius: 16px; overflow: hidden;
-    border: 1px solid #334155; box-shadow: 0 20px 50px #0006;
-  }
-  .hero img { display: block; width: 100%; height: auto; }
-  .badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700;
-    background: #14532d55; color: var(--good); border: 1px solid #22c55e55;
-  }
-  .floor {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 14px; padding: 0 24px 28px;
-  }
-  .desk {
-    background: linear-gradient(180deg, #1a223a, var(--panel));
-    border: 1px solid #334155; border-radius: 18px; padding: 16px;
-    position: relative; overflow: hidden; min-height: 210px;
-  }
-  .desk.working { box-shadow: 0 0 0 1px #60a5fa55, 0 12px 30px #0005; }
-  .desk.idle { opacity: 0.88; }
-  .desk.done { box-shadow: 0 0 0 1px #4ade8055; }
-  .avatar {
-    width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center;
-    font-size: 1.7rem; margin-bottom: 10px; border: 2px solid #0003;
-  }
-  .name { font-weight: 800; font-size: 1.05rem; }
-  .role { color: var(--muted); font-size: 0.8rem; margin-bottom: 10px; }
-  .task { font-size: 0.92rem; margin: 0 0 6px; }
-  .stage { color: var(--muted); font-size: 0.82rem; min-height: 2.4em; }
-  .bar {
-    height: 10px; background: #0f172a; border-radius: 999px; overflow: hidden; margin-top: 12px;
-    border: 1px solid #334155;
-  }
-  .bar > i {
-    display: block; height: 100%; width: 0%;
-    background: linear-gradient(90deg, #38bdf8, #a78bfa);
-    transition: width 0.6s ease;
-  }
-  .state-pill {
-    position: absolute; top: 14px; right: 14px;
-    font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
-    padding: 4px 8px; border-radius: 999px;
-  }
-  .state-working { background: #1d4ed855; color: #93c5fd; }
-  .state-idle { background: #33415588; color: #cbd5e1; }
-  .state-done { background: #14532d88; color: #86efac; }
-  .state-blocked { background: #7c2d1288; color: #fdba74; }
-  .ticker {
-    margin: 0 24px 24px; padding: 12px 16px; border-radius: 12px;
-    background: #0f172a; border: 1px dashed #475569; color: var(--muted); font-size: 0.9rem;
-  }
-  footer { padding: 0 24px 28px; color: #64748b; font-size: 0.78rem; }
-  .bob { animation: bob 1.2s ease-in-out infinite; display: inline-block; }
-  @keyframes bob { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-4px);} }
-  .typing::after { content: "▋"; animation: blink 1s step-end infinite; margin-left: 2px; color: #93c5fd; }
-  @keyframes blink { 50% { opacity: 0; } }
+:root{--ink:#e8eefc;--muted:#a8b4d4;--good:#4ade80}
+*{box-sizing:border-box}
+body{margin:0;font-family:ui-rounded,"Segoe UI",system-ui,sans-serif;background:#050814;color:var(--ink);min-height:100vh;overflow-x:hidden}
+header{padding:14px 18px 6px;position:relative;z-index:5}
+header h1{margin:0;font-size:1.35rem}
+.badge{display:inline-flex;padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:800;background:#14532d66;color:var(--good);border:1px solid #22c55e55}
+.meta{color:var(--muted);font-size:.85rem}
+.stage-wrap{position:relative;margin:8px 14px 12px;border-radius:18px;overflow:hidden;border:1px solid #334155;box-shadow:0 24px 60px #000a;aspect-ratio:16/9;max-height:min(72vh,820px);background:#0b1020}
+.floor-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.fog{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 80%,transparent 30%,#05081488 100%)}
+.actors{position:absolute;inset:0}
+.runner{position:absolute;width:42px;height:54px;transform:translate(-50%,-100%);transition:left 2.8s linear,top 2.8s linear;z-index:3;filter:drop-shadow(0 4px 3px #0008)}
+.runner .body{width:22px;height:28px;margin:0 auto;border-radius:8px 8px 4px 4px}
+.runner .head{width:16px;height:16px;border-radius:50%;margin:0 auto 1px}
+.runner .legs{display:flex;justify-content:center;gap:4px;margin-top:-2px}
+.runner .leg{width:5px;height:12px;border-radius:3px;transform-origin:top center}
+.runner.working .leg.l{animation:strideL .35s ease-in-out infinite}
+.runner.working .leg.r{animation:strideR .35s ease-in-out infinite}
+.runner.working{animation:bobY .35s ease-in-out infinite}
+.runner.done .body::after{content:"✨";position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:12px}
+.runner .label{position:absolute;left:50%;top:100%;transform:translateX(-50%);white-space:nowrap;font-size:10px;font-weight:800;margin-top:2px;text-shadow:0 1px 3px #000;background:#0f172acc;padding:1px 6px;border-radius:6px}
+@keyframes strideL{0%,100%{transform:rotate(28deg)}50%{transform:rotate(-28deg)}}
+@keyframes strideR{0%,100%{transform:rotate(-28deg)}50%{transform:rotate(28deg)}}
+@keyframes bobY{0%,100%{transform:translate(-50%,-100%) translateY(0)}50%{transform:translate(-50%,-100%) translateY(-3px)}}
+.critter{position:absolute;width:58px;height:58px;transform:translate(-50%,-100%);z-index:4;filter:drop-shadow(0 6px 4px #0009);transition:left 3.2s ease-in-out,top 3.2s ease-in-out}
+.critter img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+.critter.working{animation:hop .55s ease-in-out infinite}
+.critter.idle{animation:breathe 2.4s ease-in-out infinite}
+.critter.done{animation:celebrate .8s ease-in-out infinite}
+@keyframes hop{0%,100%{transform:translate(-50%,-100%) translateY(0) rotate(-2deg)}50%{transform:translate(-50%,-100%) translateY(-10px) rotate(2deg)}}
+@keyframes breathe{0%,100%{transform:translate(-50%,-100%) scale(1)}50%{transform:translate(-50%,-100%) scale(1.04)}}
+@keyframes celebrate{0%,100%{transform:translate(-50%,-100%) rotate(-8deg)}50%{transform:translate(-50%,-100%) rotate(8deg) translateY(-8px)}}
+.speech{position:absolute;max-width:160px;padding:6px 8px;border-radius:10px;background:#fff;color:#0f172a;font-size:11px;font-weight:700;transform:translate(-50%,-140%);z-index:6;box-shadow:0 4px 12px #0006;opacity:0;pointer-events:none;transition:opacity .3s}
+.speech.show{opacity:1}
+.speech::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:#fff;border-bottom:0}
+.ticker{margin:0 14px 10px;padding:10px 14px;border-radius:12px;background:#0f172a;border:1px dashed #475569;color:var(--muted);font-size:.9rem}
+.roster{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;padding:0 14px 20px}
+.card{background:linear-gradient(180deg,#1a223a,#141a2e);border:1px solid #334155;border-radius:14px;padding:12px;display:flex;gap:10px;align-items:center}
+.card img{width:48px;height:48px;object-fit:contain;image-rendering:pixelated}
+.card .name{font-weight:800;font-size:.92rem}
+.card .role{color:var(--muted);font-size:.75rem}
+.card .task{font-size:.82rem;margin-top:4px}
+.pill{margin-left:auto;font-size:.65rem;font-weight:800;text-transform:uppercase;padding:3px 7px;border-radius:999px;align-self:flex-start}
+.pill-working{background:#1d4ed855;color:#93c5fd}
+.pill-idle{background:#33415588;color:#cbd5e1}
+.pill-done{background:#14532d88;color:#86efac}
+.bar{height:6px;background:#0f172a;border-radius:99px;margin-top:6px;overflow:hidden;border:1px solid #334155}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,#38bdf8,#a78bfa)}
+footer{padding:0 14px 24px;color:#64748b;font-size:.75rem}
 </style>
 </head>
 <body>
-  <header>
-    <div>
-      <div class="badge">PAPER RESEARCH ONLY</div>
-      <h1>New Bot HQ</h1>
-      <div class="meta">Live office floor · updates from <code>status.json</code> · <span id="updated">…</span></div>
-    </div>
-  </header>
-  <div class="hero" id="heroWrap"><img src="office-hero.png" alt="Pixel office crew at work" onerror="this.parentElement.style.display='none'" /></div>
-  <div class="ticker" id="ticker">Loading floor chatter…</div>
-  <div class="floor" id="floor"></div>
-  <footer>
-    Characters map to real workstreams. Auto-refreshes every 3s from status.json.
-    No trades. No keys on the wall.
-  </footer>
+<header>
+<div class="badge">PAPER RESEARCH ONLY</div>
+<h1>New Bot HQ</h1>
+<div class="meta">Live office · little people + original critters · <span id="updated">…</span></div>
+</header>
+<div class="stage-wrap"><img class="floor-bg" id="floorBg" alt="office floor" /><div class="fog"></div><div class="actors" id="actors"></div></div>
+<div class="ticker" id="ticker">Loading floor chatter…</div>
+<div class="roster" id="roster"></div>
+<footer>Original HQ mascots: Voltbug, Foldfox, Scanslime, Archivowl, Bunbot — not affiliated with Pokémon. Auto-refreshes every 3s. No trades.</footer>
+<script src="assets.js"></script>
 <script>
-async function load() {
-  try {
-    const res = await fetch('status.json?ts=' + Date.now());
-    const data = await res.json();
-    document.getElementById('updated').textContent = 'updated ' + (data.updated_at_utc || '?');
-    const floor = document.getElementById('floor');
-    floor.innerHTML = '';
-    (data.stations || []).sort((a,b)=>(a.desk??9)-(b.desk??9)).forEach(s => {
-      const el = document.createElement('article');
-      el.className = 'desk ' + (s.state || 'idle');
-      const pct = Math.round(100 * (s.progress || 0));
-      const working = s.state === 'working';
-      el.innerHTML = `
-        <div class="state-pill state-${s.state||'idle'}">${s.state||'idle'}</div>
-        <div class="avatar" style="background:${s.color||'#334155'}33;border-color:${s.color||'#64748b'}">
-          <span class="${working?'bob':''}">${s.emoji||'🙂'}</span>
-        </div>
-        <div class="name">${s.character||'Agent'}</div>
-        <div class="role">${s.role||''}</div>
-        <p class="task ${working?'typing':''}">${s.task||''}</p>
-        <div class="stage">${s.stage||''}</div>
-        <div class="bar"><i style="width:${pct}%;background:linear-gradient(90deg,${s.color||'#38bdf8'},#a78bfa)"></i></div>
-        <div class="role" style="margin-top:8px">${pct}%</div>
-      `;
-      floor.appendChild(el);
-    });
-    const lines = data.ticker || [];
-    if (lines.length) {
-      const i = Math.floor(Date.now()/4000) % lines.length;
-      document.getElementById('ticker').textContent = '💬 ' + lines[i];
-    }
-  } catch (e) {
-    document.getElementById('ticker').textContent = 'Could not load status.json.';
-  }
-}
-load();
-setInterval(load, 3000);
+const A=window.HQ_ASSETS;
+document.getElementById('floorBg').src='data:image/jpeg;base64,'+A.bg;
+const CREATURE_B64=A.creatures, CREATURE_MIME=A.mimes, CREATURE_META=A.meta, STATION_CREATURE=A.stationCreature;
+const DESKS=[{x:22,y:62},{x:38,y:48},{x:55,y:62},{x:70,y:48},{x:48,y:78}];
+const PATHS=[[{x:18,y:70},{x:30,y:55},{x:45,y:70},{x:60,y:55},{x:75,y:70},{x:50,y:82}],[{x:25,y:55},{x:40,y:68},{x:58,y:52},{x:72,y:66},{x:50,y:45}],[{x:20,y:75},{x:35,y:60},{x:50,y:75},{x:65,y:60},{x:80,y:75}]];
+let pathIndex={};
+function makeRunner(s,idx){const el=document.createElement('div');el.className='runner '+(s.state||'idle');el.dataset.id=s.id;const c=s.color||'#94a3b8';el.innerHTML=`<div class="head" style="background:${c}"></div><div class="body" style="background:${c}cc;position:relative"></div><div class="legs"><div class="leg l" style="background:${c}"></div><div class="leg r" style="background:${c}"></div></div><div class="label">${s.character||'Agent'}</div><div class="speech" id="speech-${s.id}"></div>`;const d=DESKS[idx%DESKS.length];el.style.left=d.x+'%';el.style.top=d.y+'%';return el;}
+function makeCritter(s,idx){const ci=STATION_CREATURE[s.id]??0;const el=document.createElement('div');el.className='critter '+(s.state||'idle');el.dataset.id='c-'+s.id;el.innerHTML=`<img alt="${CREATURE_META[ci].name}" src="data:image/${CREATURE_MIME[ci]};base64,${CREATURE_B64[ci]}" />`;const d=DESKS[(idx+2)%DESKS.length];el.style.left=(d.x+6)+'%';el.style.top=(d.y-4)+'%';return el;}
+function wander(el,pathIdx){const path=PATHS[pathIdx%PATHS.length];const i=pathIndex[el.dataset.id]=((pathIndex[el.dataset.id]||0)+1)%path.length;el.style.left=path[i].x+'%';el.style.top=path[i].y+'%';}
+async function load(){try{const data=await(await fetch('status.json?ts='+Date.now())).json();document.getElementById('updated').textContent='updated '+(data.updated_at_utc||'?');const stations=(data.stations||[]).slice().sort((a,b)=>(a.desk??9)-(b.desk??9));window.__stations=stations;const roster=document.getElementById('roster');roster.innerHTML='';stations.forEach(s=>{const ci=STATION_CREATURE[s.id]??0;const pct=Math.round(100*(s.progress||0));const card=document.createElement('div');card.className='card';card.innerHTML=`<img src="data:image/${CREATURE_MIME[ci]};base64,${CREATURE_B64[ci]}" alt="" /><div style="flex:1;min-width:0"><div style="display:flex;gap:8px;align-items:center"><div><div class="name">${s.character} <span style="opacity:.7;font-size:.75rem">+ ${CREATURE_META[ci].name}</span></div><div class="role">${s.role||''} · ${CREATURE_META[ci].species}</div></div><div class="pill pill-${s.state||'idle'}">${s.state||'idle'}</div></div><div class="task">${s.task||''}</div><div class="role">${s.stage||''}</div><div class="bar"><i style="width:${pct}%"></i></div></div>`;roster.appendChild(card);});const actors=document.getElementById('actors');if(!actors.dataset.ready){stations.forEach((s,i)=>{actors.appendChild(makeRunner(s,i));actors.appendChild(makeCritter(s,i));});actors.dataset.ready='1';setInterval(()=>{(window.__stations||[]).forEach((s,i)=>{const r=document.querySelector('.runner[data-id="'+s.id+'"]');const c=document.querySelector('.critter[data-id="c-'+s.id+'"]');if(r&&r.classList.contains('working'))wander(r,i);if(c&&c.classList.contains('working'))wander(c,i+1);});},2800);setInterval(()=>{const working=(window.__stations||[]).filter(s=>s.state==='working');if(!working.length)return;const s=working[Math.floor(Math.random()*working.length)];const bubble=document.getElementById('speech-'+s.id);if(!bubble)return;bubble.textContent=(s.stage||s.task||'').slice(0,60);bubble.classList.add('show');setTimeout(()=>bubble.classList.remove('show'),2200);},4000);}else{stations.forEach(s=>{const r=document.querySelector('.runner[data-id="'+s.id+'"]');const c=document.querySelector('.critter[data-id="c-'+s.id+'"]');if(r)r.className='runner '+(s.state||'idle');if(c)c.className='critter '+(s.state||'idle');});}const lines=data.ticker||[];if(lines.length){const i=Math.floor(Date.now()/4000)%lines.length;document.getElementById('ticker').textContent='💬 '+lines[i];}}catch(e){document.getElementById('ticker').textContent='Could not load status.json';}}
+load();setInterval(load,3000);
 </script>
 </body>
 </html>
