@@ -1,6 +1,6 @@
 # New Bot HQ
 
-Live office dashboard for Jack's paper-research bot — characters at desks show current task stages.
+Animated neon office for Jack's paper-research bot — little runners walk the floor, original critter mascots hop beside them, and a roster below tracks each station from `status.json`.
 
 ## Live URL
 
