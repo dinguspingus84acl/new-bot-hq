@@ -1,11 +1,12 @@
 /* New Bot HQ — event-driven command center with aisle walks.
    Polls status.json every 3s. Identical polls do not restart motion.
+   Default view is still: no opening tour, no demo walks (opt in with ?demo=1).
    Assign/handoff/approval walk the aisle graph; tool pings may packet. */
 (function () {
   const N = window.OfficeNav;
   if (!N) throw new Error("OfficeNav missing");
 
-  const ASSET_VER = "walk3";
+  const ASSET_VER = "calm4";
   const CREATURES = {
     voltbug: { file: "assets/voltbug.png?" + ASSET_VER, name: "Voltbug", species: "spark beetle" },
     foldfox: { file: "assets/foldfox.png?" + ASSET_VER, name: "Foldfox", species: "origami fox" },
@@ -202,26 +203,6 @@
       img.style.height = (o.h / N.NATIVE_H) * 100 + "%";
       img.style.zIndex = String(N.zFromY(o.sortY));
       scene.appendChild(img);
-    });
-  }
-
-  function renderAmbient() {
-    const host = document.getElementById("ambient");
-    const spots = [
-      { x: 36.4, y: 21.2 },
-      { x: 57.8, y: 21.0 },
-      { x: 75.6, y: 21.2 },
-      { x: 24.8, y: 49.2 },
-      { x: 61.6, y: 49.0 },
-      { x: 88.6, y: 45.5 }
-    ];
-    spots.forEach((s, i) => {
-      const d = document.createElement("i");
-      d.className = "led";
-      d.style.left = s.x + "%";
-      d.style.top = s.y + "%";
-      d.dataset.i = String(i);
-      host.appendChild(d);
     });
   }
 
@@ -449,18 +430,47 @@
     }
   }
 
-  function highlightRoutesFor(id) {
-    document.querySelectorAll("#routes path").forEach((p) => {
-      const a = p.getAttribute("data-a");
-      const b = p.getAttribute("data-b");
-      const on = id && (a === id || b === id);
-      p.classList.toggle("selected", !!on);
-    });
+  function highlightRoutesFor() {
+    /* Idle floor keeps SVG traces hidden. Inspector select does not light the web. */
   }
 
   function flashRoute(id, on) {
     const p = document.querySelector('#routes path[data-id="' + id + '"]');
     if (p) p.classList.toggle("hot", !!on);
+  }
+
+  function walkTraceD(points) {
+    if (!points || !points.length) return "";
+    let d = "M " + points[0].x + " " + points[0].y;
+    for (let i = 1; i < points.length; i++) d += " L " + points[i].x + " " + points[i].y;
+    return d;
+  }
+
+  function showWalkTrace(actor, points) {
+    if (!actor || actor.kind !== "runner" || reduceMotion()) return;
+    hideWalkTrace(actor, true);
+    const svg = document.getElementById("routes");
+    if (!svg || !points || points.length < 2) return;
+    const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    p.setAttribute("d", walkTraceD(points));
+    p.setAttribute("class", "walk-trace");
+    p.setAttribute("data-walker", actor.id);
+    svg.appendChild(p);
+    requestAnimationFrame(() => p.classList.add("on"));
+    actor.traceEl = p;
+  }
+
+  function hideWalkTrace(actor, instant) {
+    if (!actor) return;
+    const p = actor.traceEl || document.querySelector('#routes path.walk-trace[data-walker="' + actor.id + '"]');
+    actor.traceEl = null;
+    if (!p) return;
+    p.classList.remove("on");
+    if (instant) {
+      if (p.parentNode) p.remove();
+      return;
+    }
+    setTimeout(() => { if (p.parentNode) p.remove(); }, 200);
   }
 
   function occupy(nodeId, who) {
@@ -551,14 +561,6 @@
     return [{ x: from.x, y: from.y, id: "_cur" }];
   }
 
-  function flashWalkRoute(fromId, destId, on) {
-    const to = typeof destId === "string" && N.STATIONS[destId] ? destId : fromId;
-    const found = N.findRoute(fromId, to);
-    if (!found) return null;
-    flashRoute(found.route.id, on);
-    return found.route.id;
-  }
-
   function beginPrepare(actor, dest, after) {
     if (reduceMotion()) {
       if (after && after.thenHome) {
@@ -590,6 +592,7 @@
     actor.bob = 0;
     setMode(actor, STATES.PREPARE);
     applyPose(actor);
+    showWalkTrace(actor, route);
     ensureTick();
   }
 
@@ -638,6 +641,7 @@
       });
       return;
     }
+    hideWalkTrace(actor);
     setMode(actor, restMode(state));
     actor.path = null;
     actor.plan = null;
@@ -653,9 +657,6 @@
     if (!runner) return;
     vacate(runner.id);
     if (mascot) vacate(mascot.id);
-    if (typeof dest === "string") {
-      runner.hotRoute = flashWalkRoute(stationId, dest, true);
-    }
     beginPrepare(runner, dest, after);
     if (mascot) {
       let slotDest = dest;
@@ -1021,7 +1022,6 @@
 
   function spawn(stations) {
     renderOccluders();
-    renderAmbient();
     renderRoutes();
     stations.forEach((s, i) => {
       const runner = makeActor("runner", s, i);
@@ -1052,22 +1052,8 @@
     });
   }
 
-  function startOpeningWalk(done) {
-    if (hq.openingDone) {
-      done();
-      return;
-    }
-    hq.openingDone = true;
-    const lead = stationById("coord");
-    if (!lead || (lead.state !== "working" && lead.state !== "idle")) {
-      done();
-      return;
-    }
-    enqueueWalk("coord", "report", {
-      thenHome: true,
-      state: lead.state || "working",
-      onDone: done
-    });
+  function demoRequested() {
+    return /(?:\?|&)demo=1(?:&|$)/.test(location.search);
   }
 
   function runDemoBeats() {
@@ -1100,6 +1086,7 @@
   }
 
   function startDemo() {
+    if (!demoRequested()) return;
     if (reduceMotion()) {
       DEMO_BEATS.forEach((beat) => {
         pushActivity({
@@ -1114,13 +1101,9 @@
       });
       return;
     }
-    if (/(?:\?|&)demo=0(?:&|$)/.test(location.search)) {
-      startOpeningWalk(function () {});
-      return;
-    }
     hq.demo = true;
     document.getElementById("demo-tag").classList.add("on");
-    startOpeningWalk(runDemoBeats);
+    runDemoBeats();
   }
 
   function ingest(data, fromPoll) {
