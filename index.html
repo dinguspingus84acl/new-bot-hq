@@ -172,19 +172,23 @@ header.top h1 {
 }
 .routes path {
   fill: none;
-  stroke: rgba(103, 232, 249, 0.08);
-  stroke-width: 1;
+  stroke: rgba(103, 232, 249, 0);
+  stroke-width: 1.15;
   stroke-linecap: round;
+  opacity: 0;
   vector-effect: non-scaling-stroke;
+  transition: opacity 180ms linear, stroke 180ms linear;
 }
-.routes path.kind-handoff { stroke: rgba(167, 139, 250, 0.08); }
 .routes path.hot {
-  stroke: rgba(103, 232, 249, 0.78);
+  opacity: 1;
+  stroke: rgba(103, 232, 249, 0.58);
 }
-.routes path.kind-handoff.hot { stroke: rgba(167, 139, 250, 0.8); }
-.routes path.selected {
-  stroke: rgba(125, 211, 252, 0.42);
+.routes path.kind-handoff.hot { stroke: rgba(167, 139, 250, 0.55); }
+.routes path.walk-trace {
+  stroke: rgba(103, 232, 249, 0.5);
+  stroke-width: 1.2;
 }
+.routes path.walk-trace.on { opacity: 1; }
 .packet {
   fill: #e0f2fe;
   stroke: #67e8f9;
@@ -202,7 +206,7 @@ header.top h1 {
   opacity: 0;
   box-shadow: 0 0 6px #22d3ee66;
 }
-.led.on { opacity: 0.28; }
+.led.on { opacity: 0.08; }
 .actor {
   position: absolute;
   left: 0;
@@ -238,7 +242,7 @@ header.top h1 {
   pointer-events: none;
   background: radial-gradient(ellipse, rgba(103, 232, 249, 0.35), transparent 70%);
 }
-.actor.is-live .halo { opacity: 0.55; }
+.actor.is-live .halo { opacity: 0; }
 .actor img {
   display: block;
   width: 100%;
@@ -302,9 +306,9 @@ header.top h1 {
 .station.status-working .scan,
 .station.status-reading .scan,
 .station.status-thinking .scan,
-.station.status-running_tool .scan { opacity: 0.55; animation: scan-move 2.8s linear infinite; }
-.station.status-thinking .scan { opacity: 0.4; animation-duration: 4.6s; }
-.station.status-idle .scan { opacity: 0.1; }
+.station.status-running_tool .scan { opacity: 0.28; animation: scan-move 3.6s linear infinite; }
+.station.status-thinking .scan { opacity: 0.18; animation-duration: 5.2s; }
+.station.status-idle .scan { opacity: 0.04; }
 .kbd {
   position: absolute;
   left: 18%;
@@ -317,8 +321,8 @@ header.top h1 {
 .station.status-working .kbd,
 .station.status-running_tool .kbd,
 .station.status-reading .kbd {
-  background: rgba(103, 232, 249, 0.45);
-  box-shadow: 0 0 6px rgba(34, 211, 238, 0.25);
+  background: rgba(103, 232, 249, 0.28);
+  box-shadow: none;
 }
 .led-dot {
   position: absolute;
@@ -330,8 +334,8 @@ header.top h1 {
   background: #64748b;
 }
 .station.status-working .led-dot,
-.station.status-reading .led-dot { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
-.station.status-running_tool .led-dot { background: var(--violet); box-shadow: 0 0 6px var(--violet); }
+.station.status-reading .led-dot { background: var(--cyan); box-shadow: 0 0 3px var(--cyan); }
+.station.status-running_tool .led-dot { background: var(--violet); box-shadow: 0 0 3px var(--violet); }
 .station.status-waiting .led-dot,
 .station.status-needs_approval .led-dot { background: var(--amber); }
 .station.status-blocked .led-dot,
@@ -653,6 +657,7 @@ footer {
   .drawer { transition: none; }
   .live-dot { box-shadow: none; }
   .actor.is-walk .sprite-wrap { transform: none !important; }
+  .routes path, .routes path.hot, .routes path.walk-trace { opacity: 0 !important; }
 }
 </style>
 </head>
@@ -685,7 +690,7 @@ footer {
 
   <div class="board">
     <div class="stage-wrap" id="stage">
-      <img class="floor-bg" src="assets/floor.jpg?v=walk3" alt="Pixel art HQ office floor" />
+      <img class="floor-bg" src="assets/floor.jpg?v=calm4" alt="Pixel art HQ office floor" />
       <div class="ambient" id="ambient"></div>
       <svg class="routes" id="routes" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
       <div class="vignette"></div>
@@ -744,7 +749,7 @@ footer {
   <ul class="events-mini" id="d-events"></ul>
 </aside>
 
-<script src="office-nav.js?v=walk3"></script>
-<script src="office-sim.js?v=walk3"></script>
+<script src="office-nav.js?v=calm4"></script>
+<script src="office-sim.js?v=calm4"></script>
 </body>
 </html>
