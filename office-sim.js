@@ -1,18 +1,18 @@
-/* New Bot HQ — event-driven command center.
-   Polls status.json every 3s. Characters stay at desks.
-   Motion only on normalized state changes (assign/handoff/tool/approval/block/complete/fail). */
+/* New Bot HQ — event-driven command center with aisle walks.
+   Polls status.json every 3s. Identical polls do not restart motion.
+   Assign/handoff/approval walk the aisle graph; tool pings may packet. */
 (function () {
   const N = window.OfficeNav;
   if (!N) throw new Error("OfficeNav missing");
 
+  const ASSET_VER = "walk3";
   const CREATURES = {
-    voltbug: { file: "assets/voltbug.png?seated", name: "Voltbug", species: "spark beetle" },
-    foldfox: { file: "assets/foldfox.png?seated", name: "Foldfox", species: "origami fox" },
-    scanslime: { file: "assets/scanslime.png?seated", name: "Scanslime", species: "lens slime" },
-    archivowl: { file: "assets/archivowl.png?seated", name: "Archivowl", species: "archive owl" },
-    bunbot: { file: "assets/bunbot.png?seated", name: "Bunbot", species: "bunny-bot" }
+    voltbug: { file: "assets/voltbug.png?" + ASSET_VER, name: "Voltbug", species: "spark beetle" },
+    foldfox: { file: "assets/foldfox.png?" + ASSET_VER, name: "Foldfox", species: "origami fox" },
+    scanslime: { file: "assets/scanslime.png?" + ASSET_VER, name: "Scanslime", species: "lens slime" },
+    archivowl: { file: "assets/archivowl.png?" + ASSET_VER, name: "Archivowl", species: "archive owl" },
+    bunbot: { file: "assets/bunbot.png?" + ASSET_VER, name: "Bunbot", species: "bunny-bot" }
   };
-  const ASSET_VER = "seated2";
   const RUNNERS = {
     coord: "assets/runner-coord.png?" + ASSET_VER,
     deep: "assets/runner-deep.png?" + ASSET_VER,
@@ -29,7 +29,18 @@
   };
   const FALLBACK_IDS = ["coord", "deep", "cluster", "watch", "lab"];
   const ACTIVITY_CAP = 8;
-  const PACKET_MAX = 2;
+  const MOTION_MAX = 2;
+  const STATES = {
+    IDLE: "IDLE",
+    PREPARE: "PREPARE_TO_MOVE",
+    WALK: "WALK",
+    ARRIVE: "ARRIVE",
+    WORK: "WORK"
+  };
+  const PREPARE_MS = 130;
+  const ARRIVE_MS = 180;
+  const FOLLOW_LAG_PX = 22;
+  const FOLLOW_DELAY = 140;
   const DEMO_BEATS = [
     { wait: 700, type: "assigned", from: "coord", to: "deep", agent: "deep", task: "Watchlist packet review", result: "assigned" },
     { wait: 1000, type: "tool_started", from: "deep", to: "coord", agent: "deep", task: "Watchlist packet review", result: "running tool: probe" },
@@ -108,6 +119,11 @@
     demoTimer: 0,
     packets: 0,
     packetQ: [],
+    walkQ: [],
+    occupancy: new Map(),
+    lastT: 0,
+    raf: 0,
+    openingDone: false,
     activity: [],
     seenSince: {},
     overlay: {},
@@ -147,7 +163,30 @@
       "</div>" +
       '<div class="done-spark" aria-hidden="true"></div>';
     sceneEl().appendChild(el);
-    return { id: el.dataset.id, stationId: station.id, kind: kind, el: el };
+    const face = home.face || spec.face || "right";
+    return {
+      id: el.dataset.id,
+      stationId: station.id,
+      kind: kind,
+      el: el,
+      sprite: el.querySelector(".sprite-wrap"),
+      x: home.x,
+      y: home.y,
+      face: face,
+      heading: { x: face === "left" ? -1 : 1, y: 0 },
+      mode: STATES.IDLE,
+      path: null,
+      plan: null,
+      walkT: 0,
+      walkS: 0,
+      phaseT: 0,
+      pending: null,
+      after: null,
+      bob: 0,
+      vx: 0,
+      vy: 0,
+      hotRoute: null
+    };
   }
 
   function renderOccluders() {
@@ -424,6 +463,371 @@
     if (p) p.classList.toggle("hot", !!on);
   }
 
+  function occupy(nodeId, who) {
+    if (!nodeId) return;
+    hq.occupancy.set(nodeId, who);
+  }
+
+  function vacate(who) {
+    hq.occupancy.forEach((v, k) => {
+      if (v === who) hq.occupancy.delete(k);
+    });
+  }
+
+  function destTaken(nodeId, who) {
+    const owner = hq.occupancy.get(nodeId);
+    return owner && owner !== who;
+  }
+
+  function applyPose(actor) {
+    actor.el.style.left = actor.x + "%";
+    actor.el.style.top = actor.y + "%";
+    actor.el.style.zIndex = String(N.zFromY(actor.y));
+    actor.el.classList.toggle("face-left", actor.face === "left");
+    if (!actor.sprite) return;
+    if (actor.mode === STATES.WALK && actor.bob) {
+      actor.sprite.style.transform = "translateY(" + actor.bob + "px)";
+    } else {
+      actor.sprite.style.transform = "";
+    }
+  }
+
+  function setMode(actor, mode) {
+    actor.mode = mode;
+    actor.el.classList.toggle("is-walk", mode === STATES.WALK || mode === STATES.PREPARE);
+    actor.el.classList.toggle("is-prepare", mode === STATES.PREPARE);
+  }
+
+  function restMode(state) {
+    return state === "working" ? STATES.WORK : STATES.IDLE;
+  }
+
+  function motionCount() {
+    let n = hq.packets;
+    hq.actors.forEach((a) => {
+      if (a.kind === "runner" && (a.mode === STATES.WALK || a.mode === STATES.PREPARE || a.mode === STATES.ARRIVE)) n += 1;
+    });
+    return n;
+  }
+
+  function anyWalk() {
+    let yes = false;
+    hq.actors.forEach((a) => {
+      if (a.mode === STATES.WALK || a.mode === STATES.PREPARE || a.mode === STATES.ARRIVE || a.pending) yes = true;
+    });
+    return yes;
+  }
+
+  function ensureTick() {
+    if (!hq.raf) hq.raf = requestAnimationFrame(tick);
+  }
+
+  function buildRoute(from, dest, walkerId) {
+    const visiting = typeof dest === "string" && N.STATIONS[dest] && walkerId !== dest;
+    if (visiting) {
+      const slot = N.companionPoint(dest, true);
+      const via = N.STATIONS[dest].approach || dest;
+      const route = N.chamfer(N.pathFromPoint(from, via));
+      route.push({ x: slot.x, y: slot.y, id: "_slot", face: slot.face });
+      return route;
+    }
+    if (dest && dest.x != null && dest.via) {
+      const route = N.chamfer(N.pathFromPoint(from, dest.via));
+      route.push({ x: dest.x, y: dest.y, id: "_slot", face: dest.face });
+      return route;
+    }
+    if (typeof dest === "string") {
+      return N.chamfer(N.pathFromPoint(from, dest));
+    }
+    if (dest && dest.x != null) {
+      const aisleIds = Object.keys(N.NODES).filter((id) => !N.NODES[id].home);
+      const node = N.nearestNode(dest, aisleIds);
+      const route = N.chamfer(N.pathFromPoint(from, node));
+      if (N.dist(route[route.length - 1], dest) > 2) {
+        route.push({ x: dest.x, y: dest.y, id: "_slot", face: dest.face });
+      }
+      return route;
+    }
+    return [{ x: from.x, y: from.y, id: "_cur" }];
+  }
+
+  function flashWalkRoute(fromId, destId, on) {
+    const to = typeof destId === "string" && N.STATIONS[destId] ? destId : fromId;
+    const found = N.findRoute(fromId, to);
+    if (!found) return null;
+    flashRoute(found.route.id, on);
+    return found.route.id;
+  }
+
+  function beginPrepare(actor, dest, after) {
+    if (reduceMotion()) {
+      if (after && after.thenHome) {
+        setMode(actor, restMode(after.state || "idle"));
+        actor.path = null;
+        actor.plan = null;
+        if (after.onDone && actor.kind === "runner") after.onDone();
+        pumpMotions();
+        return;
+      }
+      const route = buildRoute(actor, dest, actor.id);
+      const end = route[route.length - 1];
+      crossfadeTo(actor, end, after);
+      return;
+    }
+    const route = buildRoute(actor, dest, actor.id);
+    if (route.length < 2 || N.polyLen(route) < 4) {
+      finishArrive(actor, after);
+      return;
+    }
+    const first = route[1] || route[0];
+    actor.face = N.faceFromHeading(N.heading(actor, first), actor.face);
+    actor.path = route;
+    actor.plan = N.travelPlan(N.polyLen(route));
+    actor.walkT = 0;
+    actor.walkS = 0;
+    actor.phaseT = 0;
+    actor.after = after;
+    actor.bob = 0;
+    setMode(actor, STATES.PREPARE);
+    applyPose(actor);
+    ensureTick();
+  }
+
+  function crossfadeTo(actor, end, after) {
+    actor.el.style.transition = "opacity 160ms linear";
+    actor.el.style.opacity = "0";
+    setTimeout(() => {
+      actor.x = end.x;
+      actor.y = end.y;
+      if (end.face) actor.face = end.face;
+      else if (after && after.look) actor.face = after.look;
+      actor.bob = 0;
+      applyPose(actor);
+      actor.el.style.opacity = "1";
+      setTimeout(() => {
+        actor.el.style.transition = "";
+        finishArrive(actor, after);
+      }, 160);
+    }, 160);
+  }
+
+  function finishArrive(actor, after) {
+    const dest = after && after.look ? after : actor.path && actor.path[actor.path.length - 1];
+    if (dest && dest.face) actor.face = dest.face;
+    else if (after && after.look) actor.face = after.look;
+    actor.bob = 0;
+    setMode(actor, STATES.ARRIVE);
+    actor.phaseT = 0;
+    actor.after = after || actor.after;
+    applyPose(actor);
+    ensureTick();
+  }
+
+  function settleAfter(actor) {
+    const after = actor.after || {};
+    const state = after.state || "idle";
+    if (actor.hotRoute) {
+      flashRoute(actor.hotRoute, false);
+      actor.hotRoute = null;
+    }
+    if (after.thenHome && actor.kind === "runner") {
+      beginPair(actor.stationId, actor.stationId, {
+        state: state,
+        look: (N.STATIONS[actor.stationId] || {}).face,
+        onDone: after.onDone
+      });
+      return;
+    }
+    setMode(actor, restMode(state));
+    actor.path = null;
+    actor.plan = null;
+    actor.bob = 0;
+    applyPose(actor);
+    if (after.onDone && actor.kind === "runner") after.onDone();
+    pumpMotions();
+  }
+
+  function beginPair(stationId, dest, after) {
+    const runner = hq.actors.get(stationId);
+    const mascot = hq.actors.get("c-" + stationId);
+    if (!runner) return;
+    vacate(runner.id);
+    if (mascot) vacate(mascot.id);
+    if (typeof dest === "string") {
+      runner.hotRoute = flashWalkRoute(stationId, dest, true);
+    }
+    beginPrepare(runner, dest, after);
+    if (mascot) {
+      let slotDest = dest;
+      if (typeof dest === "string" && dest === stationId) {
+        slotDest = N.companionPoint(stationId);
+      } else if (dest === "report") {
+        slotDest = "report_b";
+      } else if (typeof dest === "string" && N.STATIONS[dest] && dest !== stationId) {
+        slotDest = N.companionPoint(dest, true);
+      }
+      mascot.pending = {
+        dest: slotDest,
+        after: { state: after && after.state, look: after && after.look },
+        at: performance.now() + FOLLOW_DELAY,
+        follow: true
+      };
+    }
+    if (typeof dest === "string" && dest === stationId) occupy(dest, runner.id);
+    ensureTick();
+  }
+
+  function enqueueWalk(fromId, destId, opts) {
+    if (!fromId || !destId) return;
+    const runner = hq.actors.get(fromId);
+    if (!runner) return;
+    const destPt = typeof destId === "string" ? N.NODES[destId] : destId;
+    if (destPt && N.dist(runner, destPt) < 8 && !(opts && opts.thenHome && fromId !== destId)) {
+      if (opts && opts.thenHome && fromId !== destId) {
+        enqueueWalk(fromId, fromId, { state: opts.state, onDone: opts.onDone });
+        return;
+      }
+      if (opts && opts.onDone) opts.onDone();
+      return;
+    }
+    if (runner.mode === STATES.WALK || runner.mode === STATES.PREPARE) {
+      runner._retarget = destId;
+      runner.after = Object.assign({}, runner.after || {}, opts || {});
+      return;
+    }
+    if (reduceMotion()) {
+      beginPair(fromId, destId, opts || {});
+      return;
+    }
+    hq.walkQ.push({ fromId: fromId, destId: destId, opts: opts || {} });
+    pumpMotions();
+  }
+
+  function pumpMotions() {
+    while (motionCount() < MOTION_MAX && hq.walkQ.length) {
+      const job = hq.walkQ.shift();
+      beginPair(job.fromId, job.destId, job.opts);
+    }
+    pumpPackets();
+  }
+
+  function stepActor(actor, dt, now) {
+    if (actor.pending && now >= actor.pending.at) {
+      const job = actor.pending;
+      actor.pending = null;
+      if (job.follow) {
+        actor.slotDest = job.dest;
+        actor.after = job.after || {};
+        actor.follow = true;
+        actor.vx = 0;
+        actor.vy = 0;
+        if (actor.mode !== STATES.WALK && actor.mode !== STATES.PREPARE) {
+          setMode(actor, STATES.WALK);
+        }
+      } else if (actor.mode === STATES.WALK || actor.mode === STATES.PREPARE) {
+        actor.after = job.after;
+        actor._retarget = job.dest;
+      } else {
+        beginPrepare(actor, job.dest, job.after);
+      }
+    }
+
+    if (actor.mode === STATES.PREPARE) {
+      actor.phaseT += dt;
+      actor.bob = 0;
+      if (actor.phaseT >= PREPARE_MS / 1000) {
+        setMode(actor, STATES.WALK);
+        actor.walkT = 0;
+      }
+      applyPose(actor);
+      return;
+    }
+
+    if (actor.kind === "critter" && actor.follow) {
+      const runner = hq.actors.get(actor.stationId);
+      const trailing = runner && runner.path && (runner.mode === STATES.WALK || runner.mode === STATES.PREPARE || runner.mode === STATES.ARRIVE);
+      if (trailing) {
+        const lag = N.pointAlong(runner.path, Math.max(0, (runner.walkS || 0) - FOLLOW_LAG_PX));
+        const k = 18;
+        const damp = 8;
+        actor.vx += ((lag.x - actor.x) * k - actor.vx * damp) * dt;
+        actor.vy += ((lag.y - actor.y) * k - actor.vy * damp) * dt;
+        actor.x += actor.vx * dt;
+        actor.y += actor.vy * dt;
+        actor.heading = lag.heading || actor.heading;
+        actor.face = N.faceFromHeading(actor.heading, actor.face);
+        const step = Math.floor((now / 160) % 2);
+        actor.bob = step ? -1 : 0;
+        setMode(actor, STATES.WALK);
+        applyPose(actor);
+        return;
+      }
+      actor.follow = false;
+      actor.vx = 0;
+      actor.vy = 0;
+      beginPrepare(actor, actor.slotDest, actor.after);
+      return;
+    }
+
+    if (actor.mode === STATES.WALK && actor.path && actor.plan) {
+      if (actor._retarget) {
+        const here = N.pointAlong(actor.path, actor.walkS);
+        const segEnd = actor.path[Math.min(here.seg + 1, actor.path.length - 1)];
+        const remain = N.dist(here, segEnd);
+        if (remain < 10) {
+          const dest = actor._retarget;
+          actor._retarget = null;
+          beginPrepare(actor, dest, actor.after);
+          return;
+        }
+      }
+      actor.walkT += dt;
+      const s = N.distanceAt(actor.plan, actor.walkT);
+      actor.walkS = s;
+      const pt = N.pointAlong(actor.path, s);
+      actor.x = pt.x;
+      actor.y = pt.y;
+      actor.heading = pt.heading;
+      actor.face = N.faceFromHeading(pt.heading, actor.face);
+      const step = Math.floor(actor.walkT / 0.16) % 2;
+      actor.bob = actor.kind === "runner" ? (step ? -2 : 0) : (step ? -1 : 0);
+      applyPose(actor);
+      if (actor.walkT >= actor.plan.T) {
+        const end = actor.path[actor.path.length - 1];
+        actor.x = end.x;
+        actor.y = end.y;
+        actor.bob = 0;
+        actor.vx = 0;
+        actor.vy = 0;
+        if (actor._retarget) {
+          const dest = actor._retarget;
+          actor._retarget = null;
+          beginPrepare(actor, dest, actor.after);
+          return;
+        }
+        finishArrive(actor, actor.after);
+      }
+      return;
+    }
+
+    if (actor.mode === STATES.ARRIVE) {
+      actor.phaseT += dt;
+      actor.bob = 0;
+      applyPose(actor);
+      if (actor.phaseT >= ARRIVE_MS / 1000) settleAfter(actor);
+      return;
+    }
+  }
+
+  function tick(now) {
+    hq.raf = 0;
+    const dt = hq.lastT ? Math.min(0.05, (now - hq.lastT) / 1000) : 0.016;
+    hq.lastT = now;
+    if (!hq.hidden) hq.actors.forEach((a) => stepActor(a, dt, now));
+    if (anyWalk() && !hq.hidden) hq.raf = requestAnimationFrame(tick);
+    else hq.lastT = 0;
+  }
+
   function enqueuePacket(from, to, kind) {
     if (!from || !to || from === to) return;
     if (reduceMotion() || hq.hidden) {
@@ -439,7 +843,7 @@
   }
 
   function pumpPackets() {
-    while (hq.packets < PACKET_MAX && hq.packetQ.length) {
+    while (motionCount() < MOTION_MAX && hq.packetQ.length) {
       const job = hq.packetQ.shift();
       flyPacket(job);
     }
@@ -460,7 +864,7 @@
     } catch (e) {
       hq.packets -= 1;
       flashRoute(found.route.id, false);
-      pumpPackets();
+      pumpMotions();
       return;
     }
     const dur = N.clamp(0.5 + len / 90, 0.5, 1.2);
@@ -477,7 +881,7 @@
         dest.style.boxShadow = "0 0 12px rgba(103,232,249,.45)";
         setTimeout(() => { dest.style.boxShadow = ""; }, 420);
       }
-      pumpPackets();
+      pumpMotions();
     }
     function step(now) {
       if (!path.getAttribute("d")) {
@@ -530,7 +934,12 @@
       result: ev.result || "",
       demo: !!demo
     });
-    if (ev.type === "assigned" || ev.type === "handoff" || ev.type === "tool_started") {
+    if (ev.type === "assigned" || ev.type === "handoff") {
+      enqueueWalk(ev.from, ev.to, { thenHome: true, state: "working" });
+    } else if (ev.type === "approval") {
+      const walker = ev.agent && ev.agent !== "lab" ? ev.agent : "coord";
+      enqueueWalk(walker, "lab", { thenHome: true, state: "working" });
+    } else if (ev.type === "tool_started") {
       enqueuePacket(ev.from, ev.to, ev.type);
     }
     if (ev.type === "completed" || ev.type === "failed" || ev.type === "approval") {
@@ -619,6 +1028,10 @@
       const critter = makeActor("critter", s, i);
       hq.actors.set(runner.id, runner);
       hq.actors.set(critter.id, critter);
+      occupy(s.id, runner.id);
+      const st = s.state || "idle";
+      setMode(runner, restMode(st));
+      setMode(critter, restMode(st));
       hq.seenSince[s.id] = Date.now();
     });
     renderStations(stations);
@@ -639,23 +1052,25 @@
     });
   }
 
-  function startDemo() {
-    if (reduceMotion()) {
-      DEMO_BEATS.forEach((beat) => {
-        pushActivity({
-          t: new Date().toISOString(),
-          agent: beat.agent,
-          agentName: N.shortName(stationById(beat.agent) || { id: beat.agent }),
-          action: actionVerb(beat.type),
-          task: beat.task,
-          result: beat.result,
-          demo: true
-        }, { silent: true });
-      });
+  function startOpeningWalk(done) {
+    if (hq.openingDone) {
+      done();
       return;
     }
-    hq.demo = true;
-    document.getElementById("demo-tag").classList.add("on");
+    hq.openingDone = true;
+    const lead = stationById("coord");
+    if (!lead || (lead.state !== "working" && lead.state !== "idle")) {
+      done();
+      return;
+    }
+    enqueueWalk("coord", "report", {
+      thenHome: true,
+      state: lead.state || "working",
+      onDone: done
+    });
+  }
+
+  function runDemoBeats() {
     let i = 0;
     function next() {
       if (i >= DEMO_BEATS.length) {
@@ -682,6 +1097,30 @@
       }, beat.wait);
     }
     next();
+  }
+
+  function startDemo() {
+    if (reduceMotion()) {
+      DEMO_BEATS.forEach((beat) => {
+        pushActivity({
+          t: new Date().toISOString(),
+          agent: beat.agent,
+          agentName: N.shortName(stationById(beat.agent) || { id: beat.agent }),
+          action: actionVerb(beat.type),
+          task: beat.task,
+          result: beat.result,
+          demo: true
+        }, { silent: true });
+      });
+      return;
+    }
+    if (/(?:\?|&)demo=0(?:&|$)/.test(location.search)) {
+      startOpeningWalk(function () {});
+      return;
+    }
+    hq.demo = true;
+    document.getElementById("demo-tag").classList.add("on");
+    startOpeningWalk(runDemoBeats);
   }
 
   function ingest(data, fromPoll) {
@@ -770,6 +1209,10 @@
     if (ambient) ambient.classList.toggle("paused", hq.hidden);
     if (stage) stage.classList.toggle("paused", hq.hidden);
     document.getElementById("live-label").textContent = hq.hidden ? "PAUSED" : "LIVE";
+    if (!hq.hidden && anyWalk()) {
+      hq.lastT = 0;
+      ensureTick();
+    }
   });
 
   setInterval(() => {
@@ -788,6 +1231,9 @@
     ingest: function (data) { ingest(data, false); },
     select: selectAgent,
     applyEvent: function (ev) { applyEvent(ev, false); },
+    goto: function (id, dest, after) {
+      enqueueWalk(id, dest, after || { state: "working", thenHome: true });
+    },
     actors: hq.actors,
     nav: N,
     _state: hq

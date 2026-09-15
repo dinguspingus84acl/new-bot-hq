@@ -251,6 +251,7 @@ header.top h1 {
   image-rendering: crisp-edges;
 }
 .actor.face-left img { transform: scaleX(-1); }
+.actor.is-walk .shadow { opacity: 0.9; }
 .label { display: none; }
 .status-chip {
   position: absolute;
@@ -651,6 +652,7 @@ footer {
   .activity-list li.enter { opacity: 1; transform: none; }
   .drawer { transition: none; }
   .live-dot { box-shadow: none; }
+  .actor.is-walk .sprite-wrap { transform: none !important; }
 }
 </style>
 </head>
@@ -683,7 +685,7 @@ footer {
 
   <div class="board">
     <div class="stage-wrap" id="stage">
-      <img class="floor-bg" src="assets/floor.jpg?seated" alt="Pixel art HQ office floor" />
+      <img class="floor-bg" src="assets/floor.jpg?v=walk3" alt="Pixel art HQ office floor" />
       <div class="ambient" id="ambient"></div>
       <svg class="routes" id="routes" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
       <div class="vignette"></div>
@@ -742,7 +744,7 @@ footer {
   <ul class="events-mini" id="d-events"></ul>
 </aside>
 
-<script src="office-nav.js?v=seated2"></script>
-<script src="office-sim.js?v=seated2"></script>
+<script src="office-nav.js?v=walk3"></script>
+<script src="office-sim.js?v=walk3"></script>
 </body>
 </html>
