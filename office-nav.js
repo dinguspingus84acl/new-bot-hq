@@ -12,60 +12,60 @@
 
   const STATIONS = {
     coord: {
-      seat: { x: 31.8, y: 69.2 },
-      companion: { dx: 2.8, dy: 2.3 },
+      seat: { x: 32.8, y: 58.2 },
+      companion: { dx: 5.2, dy: 1.4 },
       face: "right",
       monitor: { x: 26.2, y: 50.8, w: 11.2, h: 7.2 },
       strip: { x: 18.4, y: 57.2, w: 16.5 },
-      chip: { x: 31.8, y: 73.4 },
-      hit: { x: 23.2, y: 52.5, w: 16.8, h: 22.5 }
+      chip: { x: 32.8, y: 61.4 },
+      hit: { x: 24.6, y: 45.8, w: 16.4, h: 18.4 }
     },
     deep: {
-      seat: { x: 39.8, y: 35.2 },
-      companion: { dx: 2.0, dy: 2.05 },
+      seat: { x: 36.8, y: 31.8 },
+      companion: { dx: 4.4, dy: 1.2 },
       face: "right",
       monitor: { x: 34.6, y: 20.4, w: 10.4, h: 6.6 },
       strip: { x: 28.8, y: 27.2, w: 15.2 },
-      chip: { x: 39.8, y: 38.8 },
-      hit: { x: 32.4, y: 20.8, w: 15.6, h: 20.5 }
+      chip: { x: 36.8, y: 35.0 },
+      hit: { x: 30.4, y: 18.8, w: 15.0, h: 17.8 }
     },
     cluster: {
-      seat: { x: 55.4, y: 33.6 },
-      companion: { dx: -2.05, dy: 2.05 },
+      seat: { x: 53.0, y: 32.2 },
+      companion: { dx: -4.4, dy: 1.2 },
       face: "left",
       monitor: { x: 51.8, y: 20.2, w: 10.6, h: 6.6 },
       strip: { x: 46.8, y: 26.8, w: 15.4 },
-      chip: { x: 55.4, y: 37.4 },
-      hit: { x: 47.8, y: 19.6, w: 15.8, h: 20.2 }
+      chip: { x: 53.0, y: 35.2 },
+      hit: { x: 45.8, y: 19.0, w: 14.8, h: 17.6 }
     },
     watch: {
-      seat: { x: 71.2, y: 33.8 },
-      companion: { dx: -2.1, dy: 2.1 },
+      seat: { x: 69.2, y: 32.2 },
+      companion: { dx: -4.6, dy: 1.2 },
       face: "left",
       monitor: { x: 68.4, y: 20.4, w: 10.8, h: 6.6 },
       strip: { x: 63.6, y: 27.0, w: 15.6 },
-      chip: { x: 71.2, y: 37.6 },
-      hit: { x: 63.6, y: 19.8, w: 16.2, h: 20.4 }
+      chip: { x: 69.2, y: 35.2 },
+      hit: { x: 61.8, y: 19.0, w: 15.2, h: 17.6 }
     },
     lab: {
-      seat: { x: 60.6, y: 69.0 },
-      companion: { dx: -2.8, dy: 2.3 },
+      seat: { x: 61.4, y: 58.2 },
+      companion: { dx: -5.2, dy: 1.4 },
       face: "left",
       monitor: { x: 57.4, y: 50.6, w: 11.0, h: 7.0 },
       strip: { x: 51.6, y: 57.0, w: 16.2 },
-      chip: { x: 60.6, y: 73.2 },
-      hit: { x: 52.4, y: 52.2, w: 16.6, h: 22.4 }
+      chip: { x: 61.4, y: 61.4 },
+      hit: { x: 53.4, y: 45.6, w: 16.2, h: 18.4 }
     }
   };
 
   const DESK_INDEX = ["coord", "deep", "cluster", "watch", "lab"];
 
   const AGENT_META = {
-    coord: { org: "Coordinator", specialty: "Delegation / floor lead", reportsTo: null },
-    deep: { org: "Research", specialty: "Forensics", reportsTo: "coord" },
-    cluster: { org: "Analysis", specialty: "Cluster intel", reportsTo: "coord" },
-    watch: { org: "Monitoring", specialty: "Watch floor", reportsTo: "coord" },
-    lab: { org: "Archive", specialty: "Review & records", reportsTo: "coord" }
+    coord: { org: "Coordinator", specialty: "Delegation / floor lead", reportsTo: null, shortName: "New Bot" },
+    deep: { org: "Research", specialty: "Forensics", reportsTo: "coord", shortName: "Mira" },
+    cluster: { org: "Analysis", specialty: "Cluster intel", reportsTo: "coord", shortName: "Kai" },
+    watch: { org: "Monitoring", specialty: "Watch floor", reportsTo: "coord", shortName: "Oak" },
+    lab: { org: "Archive", specialty: "Review & records", reportsTo: "coord", shortName: "Rex" }
   };
 
   const STATUS_META = {
@@ -85,14 +85,14 @@
 
   /* Thin aisle traces in image-percent space. Packets travel these paths. */
   const ROUTES = [
-    { id: "coord-deep", a: "coord", b: "deep", kind: "report", d: "M 31.8 69.2 C 34.8 58.5 38.2 47.0 39.8 35.2" },
-    { id: "coord-cluster", a: "coord", b: "cluster", kind: "report", d: "M 31.8 69.2 C 38.5 60.5 49.0 47.5 55.4 33.6" },
-    { id: "coord-watch", a: "coord", b: "watch", kind: "report", d: "M 31.8 69.2 C 44.5 62.0 62.5 49.5 71.2 33.8" },
-    { id: "coord-lab", a: "coord", b: "lab", kind: "handoff", d: "M 31.8 71.2 C 41.8 80.4 51.6 80.2 60.6 71.0" },
-    { id: "deep-cluster", a: "deep", b: "cluster", kind: "handoff", d: "M 39.8 37.4 C 45.2 43.8 50.4 43.6 55.4 35.8" },
-    { id: "cluster-watch", a: "cluster", b: "watch", kind: "handoff", d: "M 55.4 35.8 C 61.2 43.4 66.6 43.6 71.2 36.0" },
-    { id: "deep-lab", a: "deep", b: "lab", kind: "handoff", d: "M 39.8 35.2 C 44.8 49.5 52.8 61.5 60.6 69.0" },
-    { id: "watch-lab", a: "watch", b: "lab", kind: "report", d: "M 71.2 33.8 C 69.8 49.0 65.8 61.0 60.6 69.0" }
+    { id: "coord-deep", a: "coord", b: "deep", kind: "report", d: "M 32.8 58.2 C 34.8 49.0 36.0 39.8 36.8 31.8" },
+    { id: "coord-cluster", a: "coord", b: "cluster", kind: "report", d: "M 32.8 58.2 C 39.0 50.5 47.5 40.8 53.0 32.2" },
+    { id: "coord-watch", a: "coord", b: "watch", kind: "report", d: "M 32.8 58.2 C 44.5 52.0 60.5 42.0 69.2 32.2" },
+    { id: "coord-lab", a: "coord", b: "lab", kind: "handoff", d: "M 32.8 59.4 C 42.5 66.8 52.0 66.6 61.4 59.4" },
+    { id: "deep-cluster", a: "deep", b: "cluster", kind: "handoff", d: "M 36.8 33.2 C 42.4 38.4 47.6 38.4 53.0 33.4" },
+    { id: "cluster-watch", a: "cluster", b: "watch", kind: "handoff", d: "M 53.0 33.4 C 58.6 38.6 64.0 38.6 69.2 33.4" },
+    { id: "deep-lab", a: "deep", b: "lab", kind: "handoff", d: "M 36.8 31.8 C 43.5 43.5 52.5 52.5 61.4 58.2" },
+    { id: "watch-lab", a: "watch", b: "lab", kind: "report", d: "M 69.2 32.2 C 67.8 43.5 64.2 52.0 61.4 58.2" }
   ];
 
   const OCCLUDERS = [
@@ -120,6 +120,13 @@
     if (station && STATIONS[station.id]) return station.id;
     const n = Number.isFinite(station && station.desk) ? station.desk : idx || 0;
     return DESK_INDEX[((n % DESK_INDEX.length) + DESK_INDEX.length) % DESK_INDEX.length];
+  }
+
+  function shortName(station) {
+    const id = station && (station.id || station);
+    if (AGENT_META[id] && AGENT_META[id].shortName) return AGENT_META[id].shortName;
+    const raw = String((station && station.character) || id || "Agent");
+    return raw.replace(/\s+Desk$/i, "").trim() || "Agent";
   }
 
   function companionPoint(stationId) {
@@ -395,7 +402,7 @@
     const items = [];
     (stations || []).forEach((s) => {
       const st = deriveAgentStatus(s);
-      const name = s.character || s.id;
+      const name = shortName(s);
       if (st === "needs_approval") {
         items.push({
           id: s.id + ":approval",
@@ -455,7 +462,7 @@
     return {
       id: station.id,
       title: station.task || "No task",
-      agent: station.character || station.id,
+      agent: shortName(station),
       agentId: station.id,
       state: st,
       stateLabel: meta.label,
@@ -496,6 +503,7 @@
     diffEvents,
     commandMetrics,
     needsYouItems,
-    ticketFrom
+    ticketFrom,
+    shortName
   };
 });

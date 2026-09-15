@@ -6,13 +6,13 @@
   if (!N) throw new Error("OfficeNav missing");
 
   const CREATURES = {
-    voltbug: { file: "assets/voltbug.png?final", name: "Voltbug", species: "spark beetle" },
-    foldfox: { file: "assets/foldfox.png?final", name: "Foldfox", species: "origami fox" },
-    scanslime: { file: "assets/scanslime.png?final", name: "Scanslime", species: "lens slime" },
-    archivowl: { file: "assets/archivowl.png?final", name: "Archivowl", species: "archive owl" },
-    bunbot: { file: "assets/bunbot.png?final", name: "Bunbot", species: "bunny-bot" }
+    voltbug: { file: "assets/voltbug.png?seated", name: "Voltbug", species: "spark beetle" },
+    foldfox: { file: "assets/foldfox.png?seated", name: "Foldfox", species: "origami fox" },
+    scanslime: { file: "assets/scanslime.png?seated", name: "Scanslime", species: "lens slime" },
+    archivowl: { file: "assets/archivowl.png?seated", name: "Archivowl", species: "archive owl" },
+    bunbot: { file: "assets/bunbot.png?seated", name: "Bunbot", species: "bunny-bot" }
   };
-  const ASSET_VER = "final";
+  const ASSET_VER = "seated2";
   const RUNNERS = {
     coord: "assets/runner-coord.png?" + ASSET_VER,
     deep: "assets/runner-deep.png?" + ASSET_VER,
@@ -81,7 +81,7 @@
     if (!iso) return "—";
     const d = new Date(iso);
     if (isNaN(d.getTime())) return String(iso);
-    return d.toISOString().slice(11, 19) + "Z";
+    return d.toISOString().slice(0, 16).replace("T", " ") + "Z";
   }
 
   function actionVerb(type) {
@@ -138,14 +138,13 @@
     el.style.top = home.y + "%";
     el.style.zIndex = String(N.zFromY(home.y));
     const src = kind === "runner" ? crew.runner : crew.creature;
-    const alt = kind === "runner" ? station.character || "Agent" : crew.creatureName;
+    const alt = kind === "runner" ? N.shortName(station) : crew.creatureName;
     el.innerHTML =
       '<div class="shadow"></div>' +
       '<div class="halo" aria-hidden="true"></div>' +
       '<div class="sprite-wrap">' +
         '<img alt="' + escapeHtml(alt) + '" src="' + src + '" />' +
       "</div>" +
-      (kind === "runner" ? '<div class="label">' + escapeHtml(station.character || "Agent") + "</div>" : "") +
       '<div class="done-spark" aria-hidden="true"></div>';
     sceneEl().appendChild(el);
     return { id: el.dataset.id, stationId: station.id, kind: kind, el: el };
@@ -211,7 +210,7 @@
       wrap.className = "station";
       wrap.dataset.id = sid;
       wrap.innerHTML =
-        '<button type="button" class="station-hit" aria-label="Inspect ' + escapeHtml(s.character || sid) + '"></button>' +
+        '<button type="button" class="station-hit" aria-label="Inspect ' + escapeHtml(N.shortName(s)) + '"></button>' +
         '<div class="monitor-fx">' +
           '<div class="scan"></div>' +
           '<div class="kbd"></div>' +
@@ -221,7 +220,7 @@
           '<div class="term"></div>' +
         "</div>" +
         '<div class="progress-strip"><i></i></div>' +
-        '<div class="status-chip"><span class="chip-ico"></span><span class="chip-label"></span></div>';
+        '<div class="status-chip"><span class="chip-name"></span><span class="chip-ico"></span><span class="chip-label"></span></div>';
       const hit = wrap.querySelector(".station-hit");
       hit.style.left = spec.hit.x + "%";
       hit.style.top = spec.hit.y + "%";
@@ -255,6 +254,7 @@
     wrap.className = "station status-" + st;
     keep.forEach((c) => wrap.classList.add(c));
     wrap.classList.toggle("selected", hq.selected === id);
+    wrap.querySelector(".chip-name").textContent = N.shortName(s);
     wrap.querySelector(".chip-ico").textContent = meta.glyph;
     wrap.querySelector(".chip-label").textContent = meta.label;
     wrap.querySelector(".progress-strip > i").style.width = Math.round(100 * (s.progress || 0)) + "%";
@@ -277,7 +277,7 @@
         const crew = crewFor(s, idx);
         const st = N.deriveAgentStatus(s);
         const pct = Math.round(100 * (s.progress || 0));
-        card.querySelector(".name").innerHTML = escapeHtml(s.character || "Agent") + ' <span style="opacity:.65;font-size:.78rem">+ ' + escapeHtml(crew.creatureName) + "</span>";
+        card.querySelector(".name").innerHTML = escapeHtml(N.shortName(s)) + ' <span style="opacity:.65;font-size:.78rem">+ ' + escapeHtml(crew.creatureName) + "</span>";
         card.querySelector(".role").textContent = (s.role || "") + " · " + (N.AGENT_META[s.id] ? N.AGENT_META[s.id].org : "") + " · " + crew.species;
         const pill = card.querySelector(".pill");
         pill.className = "pill pill-" + st;
@@ -303,7 +303,7 @@
         '<div style="flex:1;min-width:0">' +
           '<div style="display:flex;gap:8px;align-items:flex-start">' +
             '<div>' +
-              '<div class="name">' + escapeHtml(s.character || "Agent") + ' <span style="opacity:.65;font-size:.78rem">+ ' + escapeHtml(crew.creatureName) + "</span></div>" +
+              '<div class="name">' + escapeHtml(N.shortName(s)) + ' <span style="opacity:.65;font-size:.78rem">+ ' + escapeHtml(crew.creatureName) + "</span></div>" +
               '<div class="role">' + escapeHtml(s.role || "") + " · " + escapeHtml((N.AGENT_META[s.id] || {}).org || "") + " · " + escapeHtml(crew.species) + "</div>" +
             "</div>" +
             '<div class="pill pill-' + st + '">' + escapeHtml((N.STATUS_META[st] || {}).label || st) + "</div>" +
@@ -524,7 +524,7 @@
     pushActivity({
       t: new Date().toISOString(),
       agent: ev.agent,
-      agentName: agent.character || ev.agent,
+      agentName: N.shortName(agent),
       action: actionVerb(ev.type),
       task: ev.task || "",
       result: ev.result || "",
@@ -589,7 +589,7 @@
     const meta = N.STATUS_META[st] || N.STATUS_META.idle;
     const org = N.AGENT_META[id] || {};
     const usage = N.usageFor(s);
-    document.getElementById("d-name").textContent = s.character || id;
+    document.getElementById("d-name").textContent = N.shortName(s);
     document.getElementById("d-org").textContent = (org.org || s.role || "") + " · " + (org.specialty || "");
     document.getElementById("d-state").textContent = meta.glyph + " " + meta.label;
     document.getElementById("d-task").textContent = s.task || "—";
@@ -645,7 +645,7 @@
         pushActivity({
           t: new Date().toISOString(),
           agent: beat.agent,
-          agentName: (stationById(beat.agent) || {}).character || beat.agent,
+          agentName: N.shortName(stationById(beat.agent) || { id: beat.agent }),
           action: actionVerb(beat.type),
           task: beat.task,
           result: beat.result,
