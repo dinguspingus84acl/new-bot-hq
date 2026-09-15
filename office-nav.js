@@ -281,7 +281,8 @@
   }
 
   function pathFromPoint(fromPt, toId) {
-    const start = nearestNode(fromPt);
+    const aisleIds = Object.keys(NODES).filter((id) => !NODES[id].home || id === toId);
+    const start = nearestNode(fromPt, aisleIds);
     const nodes = nodePath(start, toId);
     if (dist(fromPt, nodes[0]) > 6) {
       return [{ id: "_cur", x: fromPt.x, y: fromPt.y }, ...nodes];

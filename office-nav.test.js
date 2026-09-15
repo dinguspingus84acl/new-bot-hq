@@ -56,6 +56,14 @@ function pathPts(from, to) {
   });
 })();
 
+(function pathFromPointSkipsForeignSeats() {
+  const pts = nav.pathFromPoint({ x: 47.4, y: 34.2 }, "deep");
+  const homes = pts.map((p) => p.id).filter((id) => nav.NODES[id] && nav.NODES[id].home);
+  assert.deepStrictEqual(homes, ["deep"], "leaving a visit slot must not walk onto another chair");
+  const hit = nav.pathBlocked(nav.chamfer(pts));
+  assert.strictEqual(hit, null, "visit-slot → deep hit " + (hit && hit.hit));
+})();
+
 (function travelPlanCaps() {
   const short = nav.travelPlan(40);
   const long = nav.travelPlan(900);

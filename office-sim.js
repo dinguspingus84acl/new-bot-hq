@@ -523,23 +523,25 @@
   }
 
   function buildRoute(from, dest, walkerId) {
+    const visiting = typeof dest === "string" && N.STATIONS[dest] && walkerId !== dest;
+    if (visiting) {
+      const slot = N.companionPoint(dest, true);
+      const via = N.STATIONS[dest].approach || dest;
+      const route = N.chamfer(N.pathFromPoint(from, via));
+      route.push({ x: slot.x, y: slot.y, id: "_slot", face: slot.face });
+      return route;
+    }
     if (dest && dest.x != null && dest.via) {
       const route = N.chamfer(N.pathFromPoint(from, dest.via));
       route.push({ x: dest.x, y: dest.y, id: "_slot", face: dest.face });
       return route;
     }
     if (typeof dest === "string") {
-      if (destTaken(dest, walkerId) && N.STATIONS[dest]) {
-        const slot = N.companionPoint(dest, true);
-        const via = N.STATIONS[dest].approach || dest;
-        const route = N.chamfer(N.pathFromPoint(from, via));
-        route.push({ x: slot.x, y: slot.y, id: "_slot", face: slot.face });
-        return route;
-      }
       return N.chamfer(N.pathFromPoint(from, dest));
     }
     if (dest && dest.x != null) {
-      const node = N.nearestNode(dest);
+      const aisleIds = Object.keys(N.NODES).filter((id) => !N.NODES[id].home);
+      const node = N.nearestNode(dest, aisleIds);
       const route = N.chamfer(N.pathFromPoint(from, node));
       if (N.dist(route[route.length - 1], dest) > 2) {
         route.push({ x: dest.x, y: dest.y, id: "_slot", face: dest.face });
@@ -667,10 +669,11 @@
       mascot.pending = {
         dest: slotDest,
         after: { state: after && after.state, look: after && after.look },
-        at: performance.now() + FOLLOW_DELAY
+        at: performance.now() + FOLLOW_DELAY,
+        follow: true
       };
     }
-    if (typeof dest === "string" && !destTaken(dest, runner.id)) occupy(dest, runner.id);
+    if (typeof dest === "string" && dest === stationId) occupy(dest, runner.id);
     ensureTick();
   }
 
@@ -712,7 +715,16 @@
     if (actor.pending && now >= actor.pending.at) {
       const job = actor.pending;
       actor.pending = null;
-      if (actor.mode === STATES.WALK || actor.mode === STATES.PREPARE) {
+      if (job.follow) {
+        actor.slotDest = job.dest;
+        actor.after = job.after || {};
+        actor.follow = true;
+        actor.vx = 0;
+        actor.vy = 0;
+        if (actor.mode !== STATES.WALK && actor.mode !== STATES.PREPARE) {
+          setMode(actor, STATES.WALK);
+        }
+      } else if (actor.mode === STATES.WALK || actor.mode === STATES.PREPARE) {
         actor.after = job.after;
         actor._retarget = job.dest;
       } else {
@@ -731,6 +743,32 @@
       return;
     }
 
+    if (actor.kind === "critter" && actor.follow) {
+      const runner = hq.actors.get(actor.stationId);
+      const trailing = runner && runner.path && (runner.mode === STATES.WALK || runner.mode === STATES.PREPARE || runner.mode === STATES.ARRIVE);
+      if (trailing) {
+        const lag = N.pointAlong(runner.path, Math.max(0, (runner.walkS || 0) - FOLLOW_LAG_PX));
+        const k = 18;
+        const damp = 8;
+        actor.vx += ((lag.x - actor.x) * k - actor.vx * damp) * dt;
+        actor.vy += ((lag.y - actor.y) * k - actor.vy * damp) * dt;
+        actor.x += actor.vx * dt;
+        actor.y += actor.vy * dt;
+        actor.heading = lag.heading || actor.heading;
+        actor.face = N.faceFromHeading(actor.heading, actor.face);
+        const step = Math.floor((now / 160) % 2);
+        actor.bob = step ? -1 : 0;
+        setMode(actor, STATES.WALK);
+        applyPose(actor);
+        return;
+      }
+      actor.follow = false;
+      actor.vx = 0;
+      actor.vy = 0;
+      beginPrepare(actor, actor.slotDest, actor.after);
+      return;
+    }
+
     if (actor.mode === STATES.WALK && actor.path && actor.plan) {
       if (actor._retarget) {
         const here = N.pointAlong(actor.path, actor.walkS);
@@ -746,31 +784,10 @@
       actor.walkT += dt;
       const s = N.distanceAt(actor.plan, actor.walkT);
       actor.walkS = s;
-      let pt = N.pointAlong(actor.path, s);
-      if (actor.kind === "critter") {
-        const runner = hq.actors.get(actor.stationId);
-        if (runner && runner.path && (runner.mode === STATES.WALK || runner.mode === STATES.PREPARE)) {
-          const lag = N.pointAlong(runner.path, Math.max(0, runner.walkS - FOLLOW_LAG_PX));
-          const k = 18;
-          const damp = 8;
-          actor.vx += ((lag.x - actor.x) * k - actor.vx * damp) * dt;
-          actor.vy += ((lag.y - actor.y) * k - actor.vy * damp) * dt;
-          actor.x += actor.vx * dt;
-          actor.y += actor.vy * dt;
-          actor.heading = lag.heading || pt.heading;
-          pt = { x: actor.x, y: actor.y, heading: actor.heading };
-        } else {
-          actor.x = pt.x;
-          actor.y = pt.y;
-          actor.heading = pt.heading;
-          actor.vx = 0;
-          actor.vy = 0;
-        }
-      } else {
-        actor.x = pt.x;
-        actor.y = pt.y;
-        actor.heading = pt.heading;
-      }
+      const pt = N.pointAlong(actor.path, s);
+      actor.x = pt.x;
+      actor.y = pt.y;
+      actor.heading = pt.heading;
       actor.face = N.faceFromHeading(pt.heading, actor.face);
       const step = Math.floor(actor.walkT / 0.16) % 2;
       actor.bob = actor.kind === "runner" ? (step ? -2 : 0) : (step ? -1 : 0);
@@ -1095,6 +1112,10 @@
           demo: true
         }, { silent: true });
       });
+      return;
+    }
+    if (/(?:\?|&)demo=0(?:&|$)/.test(location.search)) {
+      startOpeningWalk(function () {});
       return;
     }
     hq.demo = true;
