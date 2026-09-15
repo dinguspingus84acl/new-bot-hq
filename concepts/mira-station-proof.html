@@ -4,6 +4,9 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Mira station proof — one desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@500;600&display=swap" rel="stylesheet" />
 <style>
   html, body {
     margin: 0;
@@ -145,19 +148,19 @@
   }
   .hud {
     position: absolute;
-    left: 18px;
-    top: 16px;
-    width: 280px;
+    left: 20px;
+    top: 18px;
+    width: 300px;
     pointer-events: none;
     z-index: 8;
-    text-shadow: 0 1px 2px #000;
+    text-shadow: 0 1px 3px #000;
   }
   .live {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font: 700 10px/1 "IBM Plex Mono", ui-monospace, monospace;
-    letter-spacing: 0.12em;
+    font: 600 11px/1 "IBM Plex Mono", ui-monospace, monospace;
+    letter-spacing: 0.14em;
     color: #4ade80;
   }
   .live i {
@@ -166,26 +169,32 @@
     background: #4ade80;
     box-shadow: 0 0 8px #4ade80;
     display: block;
+    flex: 0 0 6px;
   }
   .task {
-    margin: 7px 0 2px;
-    font: 600 13px/1.2 "IBM Plex Sans", sans-serif;
+    margin: 8px 0 4px;
+    font: 600 14px/1.25 "IBM Plex Sans", sans-serif;
     color: #eef3ff;
   }
   .state {
-    font: 600 10px/1 "IBM Plex Mono", ui-monospace, monospace;
-    letter-spacing: 0.08em;
+    display: block;
+    font: 600 11px/1.2 "IBM Plex Mono", ui-monospace, monospace;
+    letter-spacing: 0.1em;
     color: #67e8f9;
     text-transform: uppercase;
   }
   .tape {
-    margin-top: 10px;
-    font: 500 10px/1.45 "IBM Plex Mono", ui-monospace, monospace;
+    margin-top: 12px;
+    font: 500 11px/1.5 "IBM Plex Mono", ui-monospace, monospace;
     color: #9aa8c7;
   }
-  .tape div { min-height: 14px; }
+  .tape div {
+    display: block;
+    min-height: 16px;
+    margin: 0 0 2px;
+  }
   .prog-wrap {
-    margin-top: 8px;
+    margin-top: 10px;
     width: 92px;
     height: 3px;
     background: #1e293b;
@@ -401,7 +410,33 @@
     drawer.classList.remove("open");
   });
 
-  requestAnimationFrame(loop);
+  function start() {
+    started = 0;
+    lastTick = -1;
+    requestAnimationFrame(loop);
+  }
+  const extra = [
+    "sprites/mira-sheet.png",
+    "sprites/scanslime-sheet.png",
+    "sprites/contact-shadow.png"
+  ].map(function (src) {
+    const im = new Image();
+    im.src = src;
+    return im;
+  });
+  const imgs = Array.prototype.slice.call(document.images).concat(extra);
+  let pending = imgs.length;
+  function oneDone() {
+    pending -= 1;
+    if (!pending) start();
+  }
+  imgs.forEach(function (img) {
+    if (img.complete) oneDone();
+    else {
+      img.addEventListener("load", oneDone);
+      img.addEventListener("error", oneDone);
+    }
+  });
 })();
 </script>
 </body>
