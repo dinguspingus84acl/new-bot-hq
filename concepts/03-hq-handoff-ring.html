@@ -52,6 +52,7 @@ h1 { margin: 6px 0 0; font-size: 46px; letter-spacing: -.03em; }
 }
 .dial {
   width: 620px; height: 620px; position: relative;
+  overflow: visible;
 }
 .ring {
   position: absolute; inset: 0; border-radius: 50%;
@@ -83,9 +84,10 @@ h1 { margin: 6px 0 0; font-size: 46px; letter-spacing: -.03em; }
 .core .job { color: var(--muted); font-size: 12px; }
 .pod {
   position: absolute; width: 210px; text-align: center;
-  background: rgba(8,12,24,.78);
+  background: rgba(8,12,24,.92);
   border: 1px solid var(--line);
   padding: 8px 10px 10px;
+  z-index: 4;
 }
 .pod.hot { border-color: rgba(167,139,250,.75); box-shadow: 0 0 20px rgba(167,139,250,.25); }
 .pod img.face {
@@ -104,7 +106,12 @@ h1 { margin: 6px 0 0; font-size: 46px; letter-spacing: -.03em; }
 .p4 { left: -10px; bottom: 78px; }
 .p5 { left: -40px; top: 118px; }
 .arc {
-  position: absolute; inset: 70px; pointer-events: none;
+  position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 2;
+}
+.arc-label {
+  position: absolute; left: 18px; top: 78px; transform: none;
+  font-size: 11px; letter-spacing: .16em; color: var(--violet);
+  background: rgba(5,6,13,.92); padding: 2px 8px; z-index: 6; white-space: nowrap;
 }
 .flowbar {
   position: absolute; left: 36px; right: 36px; bottom: 28px;
@@ -164,11 +171,11 @@ h1 { margin: 6px 0 0; font-size: 46px; letter-spacing: -.03em; }
       <span class="hash" style="transform:rotate(300deg)"></span>
       <span class="hash" style="transform:rotate(330deg)"></span>
 
-      <svg class="arc" viewBox="0 0 480 480" aria-hidden="true">
-        <path d="M 86 210 C 90 320, 200 390, 330 330" fill="none" stroke="#a78bfa" stroke-width="3" stroke-dasharray="6 4" />
-        <polygon points="328,322 338,338 318,336" fill="#a78bfa" />
-        <text x="168" y="328" fill="#a78bfa" font-size="12" font-family="IBM Plex Mono, monospace" letter-spacing="1.5">MIRA → KAI</text>
+      <svg class="arc" viewBox="0 0 620 620" aria-hidden="true">
+        <path d="M 70 210 C 90 30, 530 30, 550 210" fill="none" stroke="#a78bfa" stroke-width="3" />
+        <polygon points="542,198 562,212 538,222" fill="#a78bfa" />
       </svg>
+      <div class="arc-label mono">HANDOFF · MIRA → KAI</div>
 
       <div class="core">
         <img class="hero" src="../assets/runner-coord.png" alt="New Bot command" />

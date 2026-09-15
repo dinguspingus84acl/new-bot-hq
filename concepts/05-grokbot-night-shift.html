@@ -165,13 +165,31 @@ h1 { margin: 6px 0 0; font-size: 46px; letter-spacing: -.03em; text-shadow: 0 8p
   font-size: 10px; letter-spacing: .14em; color: var(--violet); white-space: nowrap;
   background: #05070e; padding: 0 6px;
 }
-.antenna {
-  position: absolute; top: 12%; right: 18%; width: 4px; height: 48px;
-  background: #67e8f9; box-shadow: 0 0 10px #67e8f9; z-index: 2;
+.neighbor {
+  position: absolute; bottom: 22%; width: 10%;
+  background: linear-gradient(180deg, #121826, #07090f);
+  border: 1px solid #1e293b;
+  display: grid; grid-template-columns: 1fr 1fr;
+  align-content: start; gap: 8px; padding: 12px 10px;
+  z-index: 1; opacity: .7;
 }
-.antenna::after {
+.neighbor.l { left: 1.2%; height: 42%; }
+.neighbor.r { right: 1.2%; height: 30%; }
+.neighbor .w {
+  height: 16px; background: #0b1220; border: 1px solid #1e293b; width: auto;
+}
+.roof-ant {
+  width: 4px; height: 28px; background: #67e8f9;
+  box-shadow: 0 0 10px #67e8f9; position: relative; margin-top: -18px;
+}
+.roof-ant::after {
   content: ""; position: absolute; top: -8px; left: -10px;
   width: 24px; height: 8px; border: 2px solid #67e8f9; border-radius: 50%;
+}
+.horizon {
+  position: absolute; left: 0; right: 0; bottom: 21%; height: 40px;
+  background: linear-gradient(180deg, transparent, rgba(103,232,249,.06));
+  pointer-events: none;
 }
 </style>
 </head>
@@ -185,7 +203,9 @@ h1 { margin: 6px 0 0; font-size: 46px; letter-spacing: -.03em; text-shadow: 0 8p
     <span class="star" style="left:81%;top:20%"></span>
     <span class="star" style="left:91%;top:11%"></span>
   </div>
-  <div class="antenna"></div>
+  <div class="neighbor l"><span class="w"></span><span class="w"></span><span class="w"></span><span class="w"></span><span class="w"></span><span class="w"></span></div>
+  <div class="neighbor r"><span class="w"></span><span class="w"></span><span class="w"></span><span class="w"></span></div>
+  <div class="horizon"></div>
 
   <header class="title">
     <div class="kicker mono">Concept 05 / 05 · grokbottech.com</div>
@@ -199,6 +219,7 @@ h1 { margin: 6px 0 0; font-size: 46px; letter-spacing: -.03em; text-shadow: 0 8p
     <div class="facade">
       <div class="cornice">
         <span class="neon mono">GROKBOT HQ</span>
+        <span class="roof-ant" aria-hidden="true"></span>
         <span class="mono">NIGHT SHIFT · PAPER DESK</span>
       </div>
       <div class="row">
