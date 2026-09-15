@@ -145,36 +145,33 @@ img {
   background: radial-gradient(ellipse, rgba(167, 139, 250, 0.16), transparent 70%);
 }
 
-.scene { position: absolute; inset: 0; }
+.scene { position: absolute; inset: 0; z-index: 40; }
 
 .actor {
   position: absolute;
   left: var(--x);
   top: var(--y);
-  transform: translate(-50%, -100%);
+  width: var(--w);
+  height: var(--h);
+  margin-left: calc(var(--w) / -2);
+  margin-top: calc(var(--h) * -1);
   z-index: var(--z);
   pointer-events: none;
 }
-.runner {
-  width: 82px;
-  height: 114px;
-}
-.critter {
-  width: 54px;
-  height: 54px;
-}
+.runner { --w: 68px; --h: 94px; }
+.critter { --w: 42px; --h: 42px; }
 .shadow {
   position: absolute;
   left: 50%;
-  bottom: 2px;
-  width: 42%;
-  height: 8px;
-  transform: translateX(-50%);
+  bottom: 1px;
+  width: 40%;
+  height: 7px;
+  margin-left: -20%;
   background: radial-gradient(ellipse, rgba(0, 0, 0, 0.55), transparent 70%);
 }
 .sprite {
   position: absolute;
-  inset: 0 0 8px 0;
+  inset: 0 0 6px 0;
 }
 .actor img {
   width: 100%;
@@ -186,8 +183,8 @@ img {
 
 .hud {
   position: absolute;
-  z-index: 80;
-  padding: 6px 8px 7px;
+  z-index: 20;
+  padding: 5px 8px 6px;
   background: rgba(6, 10, 20, 0.82);
   border: 1px solid rgba(148, 163, 184, 0.28);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
@@ -234,6 +231,7 @@ img {
 .hud.red .lamp { background: var(--red); box-shadow: 0 0 6px var(--red); }
 .hud.quiet .name, .hud.quiet .state { color: #cbd5e1; }
 .hud.quiet .lamp { background: #64748b; }
+.lamp.red { background: var(--red); box-shadow: 0 0 6px var(--red); }
 .meter {
   margin-top: 5px;
   height: 3px;
@@ -246,6 +244,8 @@ img {
 .hud.violet .meter > i { background: var(--violet); }
 .hud.red .meter > i { background: var(--red); }
 .hud.quiet .meter > i { background: #475569; }
+.hud.blocked .state { color: var(--red); }
+.hud.blocked .meter > i { background: var(--red); }
 
 /* Future motion hooks — paused for this still. */
 .scanline, .cursor, .radar-sweep, .scanner-beam, .node-glow, .archive-lamp, .deleg-lamp, .done-flash {
@@ -253,8 +253,8 @@ img {
 }
 .scanline {
   position: absolute;
-  left: 0; right: 0; top: 18%;
-  height: 28%;
+  left: 0; right: 0; top: 34%;
+  height: 22%;
   background: linear-gradient(transparent, rgba(103, 232, 249, 0.18), transparent);
   animation: scan-move 3.6s linear infinite;
 }
@@ -318,15 +318,17 @@ img {
 }
 .packet {
   position: absolute;
-  z-index: 70;
-  left: 44.8%;
-  top: 37.6%;
-  transform: translate(-50%, -50%);
+  z-index: 55;
+  left: 48.6%;
+  top: 38.8%;
+  width: max-content;
+  margin-left: -64px;
+  margin-top: -12px;
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 4px 8px;
-  background: rgba(8, 12, 24, 0.9);
+  background: rgba(8, 12, 24, 0.92);
   border: 1px solid rgba(167, 139, 250, 0.7);
   color: #ddd6fe;
   font-size: 12px;
@@ -424,6 +426,10 @@ img {
 .events .t { color: var(--muted); font-size: 12px; }
 .events .fresh {
   animation: row-in 180ms ease-out both;
+  background: rgba(167, 139, 250, 0.08);
+  margin: 0 -6px;
+  padding-left: 6px;
+  padding-right: 6px;
 }
 .events .fresh .body { color: #f8fafc; }
 
@@ -467,7 +473,7 @@ img {
 body.is-paused *,
 body.is-paused *::before,
 body.is-paused *::after {
-  animation-play-state: paused !important;
+  animation: none !important;
 }
 </style>
 </head>
@@ -495,58 +501,58 @@ body.is-paused *::after {
     <div class="cast cast-mira" data-fx="work-light"></div>
     <div class="cast cast-newbot" data-fx="handoff-light"></div>
     <svg class="routes" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      <path d="M 38.2 24.8 C 41.6 36.4 48.2 37.2 52.4 24.6" />
+      <path d="M 42.4 25.6 C 47.6 38.8 52.8 38.8 56.6 25.8" />
     </svg>
 
     <div class="scene">
-      <!-- Feet at calibrated chair stations. Identical runner box. No walk animation. -->
-      <div class="actor runner" style="--x:36.8%; --y:32.4%; --z:362" data-id="mira">
+      <!-- Feet at chair stations. Identical runner box. No walk animation. -->
+      <div class="actor runner" style="--x:40.4%; --y:29.6%; --z:362" data-id="mira">
         <div class="shadow"></div>
         <div class="sprite"><img src="../assets/runner-deep.png" alt="Mira" width="220" height="339" /></div>
       </div>
-      <div class="actor critter" style="--x:41.4%; --y:33.6%; --z:364" data-id="scanslime">
+      <div class="actor critter" style="--x:44.6%; --y:31.0%; --z:364" data-id="scanslime">
         <div class="shadow"></div>
         <div class="sprite"><img src="../assets/scanslime.png" alt="Scanslime" width="282" height="260" /></div>
       </div>
 
-      <div class="actor runner face-left" style="--x:53.0%; --y:32.8%; --z:364" data-id="kai">
+      <div class="actor runner face-left" style="--x:57.0%; --y:29.8%; --z:364" data-id="kai">
         <div class="shadow"></div>
         <div class="sprite"><img src="../assets/runner-cluster.png" alt="Kai" width="220" height="328" /></div>
       </div>
-      <div class="actor critter" style="--x:48.4%; --y:34.0%; --z:366" data-id="foldfox">
+      <div class="actor critter" style="--x:61.2%; --y:31.2%; --z:366" data-id="foldfox">
         <div class="shadow"></div>
         <div class="sprite"><img src="../assets/foldfox.png" alt="Foldfox" width="259" height="304" /></div>
       </div>
 
-      <div class="actor runner face-left" style="--x:69.2%; --y:32.8%; --z:364" data-id="oak">
+      <div class="actor runner face-left" style="--x:73.8%; --y:29.8%; --z:364" data-id="oak">
         <div class="shadow"></div>
         <div class="sprite"><img src="../assets/runner-watch.png" alt="Oak" width="220" height="332" /></div>
       </div>
-      <div class="actor critter" style="--x:64.4%; --y:34.0%; --z:366" data-id="voltbug">
+      <div class="actor critter" style="--x:69.2%; --y:31.2%; --z:366" data-id="voltbug">
         <div class="shadow"></div>
         <div class="sprite"><img src="../assets/voltbug.png" alt="Voltbug" width="267" height="359" /></div>
       </div>
 
-      <div class="actor runner" style="--x:32.8%; --y:58.8%; --z:628" data-id="newbot">
+      <div class="actor runner" style="--x:31.8%; --y:57.4%; --z:628" data-id="newbot">
         <div class="shadow"></div>
         <div class="sprite"><img src="../assets/runner-coord.png" alt="New Bot" width="220" height="329" /></div>
       </div>
-      <div class="actor critter" style="--x:38.2%; --y:60.2%; --z:632" data-id="bunbot">
+      <div class="actor critter" style="--x:37.0%; --y:59.0%; --z:632" data-id="bunbot">
         <div class="shadow"></div>
         <div class="sprite"><img src="../assets/bunbot.png" alt="Bunbot" width="239" height="359" /></div>
       </div>
 
-      <div class="actor runner face-left" style="--x:61.4%; --y:58.8%; --z:628" data-id="rex">
+      <div class="actor runner face-left" style="--x:69.8%; --y:56.8%; --z:628" data-id="rex">
         <div class="shadow"></div>
         <div class="sprite"><img src="../assets/runner-lab.png" alt="Rex" width="220" height="325" /></div>
       </div>
-      <div class="actor critter" style="--x:56.0%; --y:60.2%; --z:632" data-id="archivowl">
+      <div class="actor critter" style="--x:64.8%; --y:58.4%; --z:632" data-id="archivowl">
         <div class="shadow"></div>
         <div class="sprite"><img src="../assets/archivowl.png" alt="Archivowl" width="277" height="307" /></div>
       </div>
     </div>
 
-    <div class="hud cyan" style="left:34.2%; top:18.6%; width:168px" data-desk="mira">
+    <div class="hud cyan" style="left:38.4%; top:14.6%; width:142px" data-desk="mira">
       <div class="scanner-beam" data-fx="mira-scanner"></div>
       <div class="scanline" data-fx="monitor-scan"></div>
       <div class="cursor" data-fx="cursor"></div>
@@ -555,28 +561,28 @@ body.is-paused *::after {
       <div class="task">Token forensics · 72%</div>
       <div class="meter"><i style="width:72%"></i></div>
     </div>
-    <div class="hud red" style="left:51.4%; top:18.4%; width:168px" data-desk="kai">
+    <div class="hud quiet blocked" style="left:55.4%; top:14.4%; width:142px" data-desk="kai">
       <div class="node-glow" data-fx="kai-nodes"></div>
       <div class="name">KAI</div>
-      <div class="state"><i class="lamp"></i>BLOCKED</div>
+      <div class="state"><i class="lamp red"></i>BLOCKED</div>
       <div class="task">Cluster wait · 41%</div>
       <div class="meter"><i style="width:41%"></i></div>
     </div>
-    <div class="hud quiet" style="left:67.8%; top:18.6%; width:168px" data-desk="oak">
+    <div class="hud quiet" style="left:72.2%; top:14.6%; width:142px" data-desk="oak">
       <div class="radar-sweep" data-fx="oak-radar"></div>
       <div class="name">OAK</div>
       <div class="state"><i class="lamp"></i>IDLE</div>
       <div class="task">Watchlist · —</div>
       <div class="meter"><i style="width:100%"></i></div>
     </div>
-    <div class="hud violet" style="left:22.8%; top:47.2%; width:168px" data-desk="newbot">
+    <div class="hud violet" style="left:22.8%; top:45.6%; width:142px" data-desk="newbot">
       <div class="deleg-lamp" data-fx="newbot-deleg"></div>
       <div class="name">NEW BOT</div>
       <div class="state"><i class="lamp"></i>HANDOFF</div>
       <div class="task">Floor report · 90%</div>
       <div class="meter"><i style="width:90%"></i></div>
     </div>
-    <div class="hud quiet" style="left:56.6%; top:47.0%; width:168px" data-desk="rex">
+    <div class="hud quiet" style="left:52.4%; top:45.8%; width:142px" data-desk="rex">
       <div class="archive-lamp" data-fx="rex-archive"></div>
       <div class="name">REX</div>
       <div class="state"><i class="lamp"></i>IDLE</div>
