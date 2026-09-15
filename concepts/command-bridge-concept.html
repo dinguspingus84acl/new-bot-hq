@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1920" />
+<title>New Bot HQ</title>
+<style>
+html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #101826; }
+* { box-sizing: border-box; }
+img { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
+.mono { font-family: "JetBrains Mono", "Noto Sans Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.b { position: relative; width: 1920px; height: 1080px; overflow: hidden; color: #e4edf5; font-family: Inter, "Noto Sans", sans-serif; }
+
+.room {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 42% at 50% 20%, rgba(80,170,190,0.26), transparent 60%),
+    radial-gradient(ellipse 24% 20% at 8% 80%, rgba(60,36,90,0.22), transparent 70%),
+    radial-gradient(ellipse 22% 18% at 92% 72%, rgba(140,80,20,0.16), transparent 70%),
+    linear-gradient(180deg, #24344c 0%, #1a2638 36%, #141c2a 100%);
+}
+.panels {
+  position: absolute; left: 0; right: 0; top: 0; height: 520px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 128px),
+    repeating-linear-gradient(180deg, rgba(0,0,0,0.1) 0 1px, transparent 1px 64px);
+}
+.floor {
+  position: absolute; left: 0; right: 0; top: 430px; height: 650px;
+  background: linear-gradient(180deg, #2a3a50 0%, #1c2838 22%, #151e2c 70%, #0e141e 100%);
+}
+.fggrid {
+  position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(90deg, rgba(160,180,210,0.08) 0 1px, transparent 1px 80px),
+    repeating-linear-gradient(0deg, rgba(160,180,210,0.05) 0 1px, transparent 1px 42px);
+  mask-image: linear-gradient(180deg, transparent, #000 30%);
+}
+.sheen { position: absolute; left: 6%; right: 6%; top: 0; height: 280px; background: radial-gradient(ellipse 80% 80% at 50% 0%, rgba(100,200,220,0.18), transparent 70%); }
+
+.L, .R { position: absolute; top: 0; bottom: 0; width: 196px; z-index: 30; }
+.L { left: 0; background: linear-gradient(90deg, #141c28 0%, #243044 78%, rgba(20,30,42,0)); box-shadow: 18px 0 40px rgba(0,0,0,0.35); }
+.R { right: 0; background: linear-gradient(270deg, #141c28 0%, #243044 78%, rgba(20,30,42,0)); box-shadow: -18px 0 40px rgba(0,0,0,0.35); }
+.rv { position: absolute; top: 86px; bottom: 30px; width: 11px; background: repeating-linear-gradient(180deg, #5a6578 0 4px, transparent 4px 22px); opacity: .6; }
+.L .rv { left: 16px; } .R .rv { right: 16px; }
+
+.ceil { position: absolute; left: 0; right: 0; top: 0; height: 88px; z-index: 32; background: linear-gradient(180deg, #10161e, #243044 80%, #1c2838); box-shadow: 0 16px 36px rgba(0,0,0,0.5); }
+.bm { position: absolute; left: 0; right: 0; height: 17px; background: linear-gradient(180deg, #4a5568, #243044); box-shadow: 0 5px 0 #0e141c, inset 0 1px 0 rgba(255,255,255,.1); }
+.bm1 { top: 8px; } .bm2 { top: 38px; height: 10px; }
+.du { position: absolute; top: 24px; height: 22px; background: repeating-linear-gradient(90deg, #334056 0 8px, #1a2230 8px 11px); box-shadow: 0 4px 8px rgba(0,0,0,.4); }
+.du1 { left: 210px; width: 340px; } .du2 { left: 820px; width: 300px; } .du3 { left: 1390px; width: 230px; }
+.cn { position: absolute; top: 58px; width: 24px; height: 12px; border-radius: 0 0 12px 12px; background: #2a3a50; box-shadow: 0 14px 20px rgba(120,210,220,.24); }
+.cn::after { content:""; position:absolute; left:4px; right:4px; top:3px; height:6px; border-radius:50%; background:#c4eef4; box-shadow:0 10px 16px rgba(150,230,240,.4); }
+.cn1 { left: 270px; } .cn2 { left: 540px; } .cn3 { left: 920px; } .cn4 { left: 1280px; } .cn5 { left: 1610px; }
+
+.strip { position: absolute; left: 208px; top: 78px; width: 1504px; height: 30px; z-index: 33; display: flex; align-items: center; gap: 14px; padding: 0 14px; background: linear-gradient(180deg, #334056, #1e2838); border: 1px solid #4a5568; box-shadow: 0 8px 18px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.08); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+.strip .k { color: #93a0b4; font-weight: 600; margin-right: 6px; }
+.strip .v { font-weight: 700; } .g { color: #5dca86; } .c { color: #6ec9d8; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #5dca86; box-shadow: 0 0 8px #5dca86; }
+.sep { width: 1px; height: 14px; background: #4a5568; }
+.paper { margin-left: auto; color: #93a0b4; font-size: 10px; }
+
+/* pano */
+.recess { position: absolute; left: 204px; top: 114px; width: 1512px; height: 352px; z-index: 6; background: #0c121c; border-radius: 40px 40px 14px 14px; box-shadow: inset 0 0 0 16px #2a3a50, inset 0 0 0 18px #141c28, 0 22px 46px rgba(0,0,0,.5); }
+.br { position: absolute; top: 140px; width: 28px; height: 110px; z-index: 7; background: linear-gradient(90deg, #4a5568, #1e2838); }
+.brl { left: 184px; } .brr { right: 184px; }
+.cove { position: absolute; left: 230px; top: 110px; width: 1460px; height: 16px; z-index: 8; background: linear-gradient(180deg, rgba(160,230,240,.36), transparent); pointer-events: none; }
+.pano { position: absolute; left: 220px; top: 126px; width: 1480px; height: 328px; z-index: 7; border-radius: 22px 22px 8px 8px; background: linear-gradient(180deg, #4a5568, #1e2838); padding: 12px; box-shadow: 0 20px 44px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.12); }
+.glass { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 10px 10px 4px 4px; background: radial-gradient(ellipse 72% 80% at 50% 42%, #153848, #0c2030 74%); box-shadow: inset 0 0 40px rgba(0,0,0,.3); }
+.seams { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, transparent 19.9%, rgba(255,255,255,.08) 19.9% 20.15%, transparent 20.15%), linear-gradient(90deg, transparent 39.9%, rgba(255,255,255,.08) 39.9% 40.15%, transparent 40.15%), linear-gradient(90deg, transparent 59.9%, rgba(255,255,255,.08) 59.9% 60.15%, transparent 60.15%), linear-gradient(90deg, transparent 79.9%, rgba(255,255,255,.08) 79.9% 80.15%, transparent 80.15%); }
+.scan { position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(180deg, rgba(255,255,255,.03) 0 1px, transparent 1px 3px); }
+.bloom { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 48% 34% at 48% 16%, rgba(170,240,250,.12), transparent 64%), linear-gradient(180deg, rgba(255,255,255,.07), transparent 22%); }
+.ui { position: absolute; inset: 8px 10px 9px; display: grid; grid-template-columns: 1fr 1.28fr .92fr; gap: 8px; }
+.box { background: rgba(10,36,46,.62); border: 1px solid rgba(120,190,210,.28); padding: 7px 8px; overflow: hidden; }
+.box h3 { margin: 0 0 6px; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: #9cc4d0; font-weight: 700; }
+.flow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+.ph { font-size: 8px; letter-spacing: .08em; text-transform: uppercase; color: #a8c2cc; margin-bottom: 4px; border-bottom: 1px solid rgba(110,201,216,.22); padding-bottom: 2px; }
+.wk .ph { color: #6ec9d8; } .apc .ph { color: #d4a24a; } .dn .ph { color: #5dca86; }
+.tk { background: rgba(8,34,44,.95); border: 1px solid rgba(120,190,210,.32); padding: 5px; margin-bottom: 5px; }
+.tk .id { font-size: 8px; color: #6ec9d8; } .tk .tt { font-size: 10px; color: #f2f7fb; margin: 2px 0 3px; line-height: 1.25; }
+.tk .meta { font-size: 8px; color: #a8c2cc; display: flex; justify-content: space-between; }
+.bar { height: 3px; background: #184050; margin-top: 3px; } .bar i { display: block; height: 100%; background: #6ec9d8; }
+.tk.done .bar i { background: #5dca86; } .tk.hold { border-color: rgba(212,162,74,.55); } .tk.hold .bar i { background: #d4a24a; }
+.slot { height: 42px; border: 1px dashed rgba(90,130,145,.28); color: #5e7a86; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+.ah { display: flex; justify-content: space-between; gap: 8px; }
+.ah .id { font-size: 11px; color: #6ec9d8; letter-spacing: .08em; }
+.ah .t { font-size: 15px; font-weight: 650; color: #f6fafc; margin-top: 2px; }
+.pri { font-size: 10px; color: #d4a24a; border: 1px solid rgba(212,162,74,.5); padding: 3px 6px; height: fit-content; }
+.kv { display: grid; grid-template-columns: repeat(4,1fr); gap: 5px; margin: 7px 0; }
+.kv div { background: rgba(6,24,32,.8); border: 1px solid rgba(120,190,210,.22); padding: 4px 6px; }
+.kv .k { font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: #9cc4d0; } .kv .v { font-size: 11px; margin-top: 2px; }
+.rt { border: 1px solid rgba(139,124,192,.38); background: rgba(24,18,42,.42); padding: 6px 8px; }
+.rt .lbl { font-size: 8px; letter-spacing: .12em; text-transform: uppercase; color: #b8b0dc; margin-bottom: 4px; }
+.rr { display: flex; align-items: center; gap: 6px; font-size: 11px; margin: 3px 0; }
+.ch { padding: 1px 6px; border: 1px solid rgba(139,124,192,.5); color: #d4ccf4; font-size: 10px; }
+.ar { color: #8b7cc0; }
+.tree { font-size: 10px; line-height: 1.45; color: #c8d4de; margin-top: 5px; }
+.me { color: #e8a0a8; } .ok { color: #5dca86; } .idling { color: #8aa0ad; }
+.foot { display: flex; justify-content: space-between; margin-top: 6px; font-size: 10px; color: #c8d6de; } .foot b { color: #5dca86; }
+.stack { display: flex; flex-direction: column; gap: 6px; height: 100%; }
+.hl { display: flex; justify-content: space-between; align-items: center; padding: 7px 8px; border: 1px solid rgba(93,202,134,.38); background: rgba(10,36,22,.55); }
+.hl .h { font-size: 13px; color: #5dca86; letter-spacing: .08em; } .hl .s { font-size: 9px; color: #8aa0ad; }
+.out { flex: 1; border: 1px solid rgba(120,190,210,.24); padding: 6px 7px; background: rgba(6,24,32,.5); }
+.ol { font-size: 11px; color: #d4e0e6; margin: 0 0 5px; } .ol span { color: #6ec9d8; }
+.ap { padding: 8px; border: 1px solid rgba(212,162,74,.58); background: rgba(52,36,8,.58); }
+.ap .a { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: #d4a24a; } .ap .b { font-size: 13px; color: #f3e4c0; margin-top: 3px; }
+
+.shelf { position: absolute; left: 214px; top: 468px; width: 1492px; height: 86px; z-index: 8; background: linear-gradient(180deg, #334056, #1e2838); box-shadow: 0 14px 24px rgba(0,0,0,.4); padding: 8px; display: flex; gap: 8px; }
+.shelf .ax { flex: 1; background: #0e2430; border: 1px solid #3a6a74; position: relative; overflow: hidden; }
+.ax .mn { padding: 6px 7px; font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: #9cc4d0; }
+.ax .mn b { display: block; margin-top: 3px; font-size: 12px; letter-spacing: 0; text-transform: none; color: #eef4fa; }
+.wave { position: absolute; left: 8px; right: 8px; bottom: 7px; height: 22px; }
+.vents { position: absolute; left: 230px; top: 554px; width: 1460px; height: 16px; z-index: 8; display: flex; gap: 14px; }
+.vent { flex: 1; height: 14px; background: repeating-linear-gradient(90deg, #334056 0 5px, #141c28 5px 8px); border: 1px solid #4a5568; }
+
+/* side hardware */
+.tape { position: absolute; left: 20px; top: 96px; width: 168px; height: 640px; z-index: 34; background: linear-gradient(180deg, #334056, #1a2230); padding: 9px; box-shadow: 12px 18px 30px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08); }
+.tape::before { content:""; position:absolute; top:84px; right:-12px; width:12px; height:46px; background:#4a5568; }
+.tape .in { height: 100%; background: #0c1c24; border: 1px solid #3a6a74; padding: 8px 7px; overflow: hidden; box-shadow: inset 0 0 16px rgba(0,0,0,.5); }
+.tape h4, .need h4 { margin: 0 0 8px; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: #6ec9d8; }
+.ev { font-size: 9px; line-height: 1.35; margin: 0 0 8px; color: #c8d6de; border-left: 2px solid #3a6a74; padding-left: 6px; }
+.ev .t { display: block; color: #7e96a2; } .ev b { color: #f4f8fc; }
+.rcv { border-color: #6ec9d8; } .asg { border-color: #8b7cc0; } .tol { border-color: #6ec9d8; } .evi { border-color: #8b7cc0; } .rvw { border-color: #c4b5fd; } .apv { border-color: #d4a24a; } .cmp { border-color: #5dca86; } .ho { border-color: #8b7cc0; }
+
+.need { position: absolute; right: 16px; top: 96px; width: 182px; height: 310px; z-index: 34; background: linear-gradient(180deg, #5a3c16, #22180c); padding: 9px; box-shadow: -12px 18px 30px rgba(0,0,0,.5), 0 0 34px rgba(212,162,74,.18), inset 0 1px 0 rgba(255,220,140,.12); }
+.need::before { content:""; position:absolute; top:92px; left:-12px; width:12px; height:46px; background:#6a4a20; }
+.need .in { height: 100%; background: #261808; border: 1px solid #8a6428; padding: 8px; box-shadow: inset 0 0 20px rgba(80,50,10,.45); }
+.need h4 { color: #d4a24a; }
+.nc { border: 1px solid rgba(212,162,74,.55); background: rgba(52,36,8,.62); padding: 8px; }
+.nc .k { font-size: 10px; color: #d4a24a; letter-spacing: .1em; }
+.nc .tt { font-size: 13px; color: #f3e6c4; margin: 6px 0; font-weight: 700; line-height: 1.25; }
+.nc .d { font-size: 10px; color: #c4ae80; line-height: 1.4; }
+.holdq { margin-top: 10px; font-size: 9px; color: #b08c48; letter-spacing: .08em; text-transform: uppercase; }
+.side2 { position: absolute; right: 20px; top: 420px; width: 174px; height: 112px; z-index: 34; background: linear-gradient(180deg, #334056, #1a2230); padding: 7px; box-shadow: -8px 12px 20px rgba(0,0,0,.45); }
+.side2 .in { height: 100%; background: #0c1c24; border: 1px solid #3a6a74; padding: 7px; }
+.side2 .k { font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: #9cc4d0; }
+.side2 .v { font-size: 12px; margin-top: 4px; }
+
+/* station islands */
+.island { position: absolute; z-index: 16; }
+.tag { position: absolute; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: #b4c0d0; z-index: 8; }
+.who { position: absolute; z-index: 3; }
+.who img { height: 156px; width: auto; }
+.pet { position: absolute; z-index: 4; }
+.pet img { width: auto; }
+.base { position: absolute; z-index: 2; background: linear-gradient(180deg, #3a4a62, #243044); box-shadow: 0 16px 22px rgba(0,0,0,.45); }
+.seat { position: absolute; width: 58px; height: 36px; background: #334056; border-radius: 8px; z-index: 2; box-shadow: 0 8px 10px rgba(0,0,0,.4); }
+.seat::before { content:""; position:absolute; left:7px; right:7px; top:-18px; height:20px; background:#2a3a50; border-radius:6px 6px 0 0; }
+.sh { position: absolute; height: 16px; border-radius: 50%; background: radial-gradient(ellipse, rgba(0,0,0,.5), transparent 70%); z-index: 1; }
+
+.mira { left: 196px; top: 500px; width: 390px; height: 280px; }
+.mira .base { left: 86px; top: 148px; width: 270px; height: 96px; border: 2px solid #5aa8b4; box-shadow: 0 16px 22px rgba(0,0,0,.45), inset 0 0 20px rgba(90,200,220,.2); }
+.mira .who { left: 36px; top: 52px; }
+.mira .seat { left: 28px; top: 176px; }
+.mira .sh { left: 16px; top: 228px; width: 96px; }
+.mira .pet { left: 132px; top: 118px; } .mira .pet img { height: 62px; }
+.mira .tag { left: 140px; top: 248px; }
+.gan { position: absolute; left: 176px; top: 58px; width: 84px; height: 112px; z-index: 5; }
+.gan .a { position: absolute; left: 36px; top: 0; width: 12px; height: 78px; background: linear-gradient(90deg, #5a6578, #2a3a50); }
+.gan .h { position: absolute; left: 14px; top: 70px; width: 56px; height: 20px; background: #2a5060; border: 1px solid #6ec9d8; box-shadow: 0 8px 14px rgba(110,201,216,.28); }
+.flm { position: absolute; left: 104px; top: 86px; width: 64px; height: 72px; z-index: 3; background: repeating-linear-gradient(90deg, rgba(110,201,216,.3) 0 8px, transparent 8px 13px); }
+.lk { position: absolute; left: 310px; top: 96px; width: 52px; height: 96px; background: #2a3a50; border: 1px solid #4a5568; z-index: 3; padding: 4px; }
+.lk i { display: block; height: 16px; margin-bottom: 4px; background: #141c28; border: 1px solid #2a5060; }
+.sc { position: absolute; left: 196px; top: 176px; width: 118px; height: 44px; z-index: 6; background: #0c1c24; border: 1px solid #5aa8b4; padding: 4px; font-size: 8px; color: #6ec9d8; line-height: 1.3; }
+
+.kai { left: 560px; top: 470px; width: 400px; height: 300px; }
+.kai .base { left: 92px; top: 166px; width: 268px; height: 88px; border: 2px solid #6a58a0; background: linear-gradient(180deg, #3a3060, #221c38); }
+.kai .who { left: 48px; top: 72px; }
+.kai .seat { left: 24px; top: 194px; }
+.kai .sh { left: 12px; top: 246px; width: 96px; }
+.kai .pet { left: 318px; top: 138px; } .kai .pet img { height: 68px; }
+.kai .tag { left: 164px; top: 262px; }
+.ks { position: absolute; left: 102px; top: 86px; width: 248px; height: 104px; z-index: 5; display: flex; gap: 5px; }
+.ks .m { flex: 1; background: #140c22; border: 2px solid #6a58a0; box-shadow: 0 0 16px rgba(139,124,192,.18); overflow: hidden; }
+.ks .w { flex: 1.35; }
+.kb { position: absolute; left: 114px; top: 196px; width: 170px; height: 16px; z-index: 6; background: repeating-linear-gradient(90deg, #4a5568 0 8px, #141c28 8px 11px); }
+.case { position: absolute; left: 328px; top: 206px; width: 36px; height: 30px; background: #1a1e26; border: 1px solid #3a3e48; z-index: 3; }
+
+.oak { left: 940px; top: 448px; width: 380px; height: 320px; }
+.oak .base { left: 96px; top: 184px; width: 220px; height: 84px; border: 2px solid #3a6a4e; background: linear-gradient(180deg, #2a4a38, #16241c); }
+.oak .who { left: 58px; top: 90px; }
+.oak .seat { left: 22px; top: 210px; }
+.oak .sh { left: 10px; top: 262px; width: 96px; }
+.oak .pet { left: 236px; top: 72px; } .oak .pet img { height: 64px; }
+.oak .tag { left: 150px; top: 276px; }
+.rad { position: absolute; left: 138px; top: 72px; width: 146px; height: 146px; z-index: 5; border-radius: 50%; background: radial-gradient(circle at 38% 34%, #2a6a48, #0e1c14 70%); border: 11px solid #345844; box-shadow: 0 14px 22px rgba(0,0,0,.45), inset 0 0 20px rgba(80,200,140,.18); }
+.wc { position: absolute; left: 96px; top: 124px; width: 40px; height: 72px; z-index: 3; background: repeating-linear-gradient(180deg, rgba(86,239,172,.22) 0 4px, transparent 4px 8px); border: 1px solid #3a6a4e; }
+.wl { position: absolute; left: 292px; top: 118px; width: 70px; height: 102px; z-index: 5; background: #0c1c16; border: 1px solid #3a6a4e; padding: 5px; font-size: 8px; color: #86efac; line-height: 1.45; }
+
+.rex { left: 1296px; top: 494px; width: 390px; height: 280px; }
+.rex .base { left: 88px; top: 156px; width: 148px; height: 86px; border: 2px solid #6a5a3a; background: linear-gradient(180deg, #4a4030, #241e16); }
+.rex .who { left: 28px; top: 52px; }
+.rex .seat { left: 20px; top: 184px; }
+.rex .sh { left: 8px; top: 234px; width: 96px; }
+.rex .pet { left: 248px; top: 48px; } .rex .pet img { height: 70px; }
+.rex .tag { left: 156px; top: 250px; }
+.cab { position: absolute; left: 220px; top: 70px; width: 128px; height: 164px; z-index: 4; background: linear-gradient(180deg, #4a4030, #241e16); border: 2px solid #6a5a3a; box-shadow: 0 14px 20px rgba(0,0,0,.4); padding: 7px; }
+.sl { height: 17px; margin-bottom: 5px; background: #120e0a; border: 1px solid #4a4030; box-shadow: inset 14px 0 0 #8a6a32; }
+.tr { position: absolute; left: 98px; top: 156px; width: 118px; height: 24px; z-index: 5; background: #5a4a32; border: 1px solid #8a6a3a; }
+.lp { position: absolute; left: 190px; top: 108px; width: 8px; height: 50px; background: #3a3224; z-index: 5; }
+.lp::after { content:""; position:absolute; left:-16px; top:38px; width:40px; height:16px; background:#d4a24a; opacity:.42; border-radius:50%; box-shadow:0 12px 16px rgba(212,162,74,.32); }
+.stmp { position: absolute; left: 104px; top: 188px; width: 30px; height: 18px; background: #6a2a1a; border: 1px solid #8a4a30; z-index: 6; }
+
+/* command horseshoe */
+.pit { position: absolute; left: 0; top: 600px; width: 1920px; height: 480px; z-index: 22; }
+.nb { position: absolute; left: 778px; top: 4px; z-index: 6; }
+.nb img { height: 250px; width: auto; }
+.bun { position: absolute; left: 976px; top: 108px; z-index: 8; }
+.bun img { height: 124px; width: auto; }
+.nch { position: absolute; left: 812px; top: 148px; width: 100px; height: 64px; z-index: 4; background: #334056; border-radius: 12px; box-shadow: 0 12px 16px rgba(0,0,0,.5); }
+.nch::before { content:""; position:absolute; left:12px; right:12px; top:-30px; height:34px; background:#2a3a50; border-radius:10px 10px 0 0; }
+.nsh { position: absolute; left: 818px; top: 210px; width: 120px; height: 20px; background: radial-gradient(ellipse, rgba(0,0,0,.55), transparent 70%); z-index: 3; }
+.bsh { position: absolute; left: 990px; top: 228px; width: 90px; height: 16px; background: radial-gradient(ellipse, rgba(0,0,0,.5), transparent 70%); z-index: 7; }
+.wash { position: absolute; left: 620px; top: 10px; width: 560px; height: 210px; background: radial-gradient(ellipse, rgba(110,201,216,.16), transparent 70%); pointer-events: none; z-index: 5; }
+.ntag { position: absolute; left: 928px; top: 248px; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: #b4c0d0; z-index: 9; }
+
+.wing { position: absolute; top: 176px; height: 304px; z-index: 7; background:
+    repeating-linear-gradient(90deg, transparent 0 56px, rgba(255,255,255,0.035) 56px 57px),
+    repeating-linear-gradient(180deg, transparent 0 28px, rgba(0,0,0,0.08) 28px 29px),
+    linear-gradient(180deg, #5a6a82 0%, #3a4a62 14%, #2a3a50 42%, #1c2838 100%);
+  box-shadow: 0 -18px 36px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.1); }
+.wing.left { left: 0; width: 1920px; }
+.wing.left::before { content:""; position:absolute; left:0; right:0; top:0; height:16px; background: linear-gradient(180deg, #7a8aa0, #3a4a62); box-shadow: 0 4px 0 #1c2838; }
+.wing.right { display: none; }
+.well { display: none; }
+.sK { left: 610px; top: 198px; width: 150px; height: 72px; }
+.sL { left: 1160px; top: 198px; width: 150px; height: 72px; }
+
+.scr { position: absolute; background: #0c2430; border: 1px solid #3a6a74; box-shadow: inset 0 0 14px rgba(0,0,0,.4), 0 0 12px rgba(80,160,180,.08); overflow: hidden; z-index: 8; }
+.sA { left: 36px; top: 198px; width: 300px; height: 108px; }
+.sB { left: 346px; top: 198px; width: 250px; height: 108px; }
+.sC { left: 36px; top: 316px; width: 300px; height: 70px; }
+.sD { left: 346px; top: 316px; width: 250px; height: 70px; }
+.sE { right: 36px; top: 198px; width: 300px; height: 70px; }
+.sF { right: 346px; top: 198px; width: 250px; height: 70px; }
+.sG { right: 36px; top: 276px; width: 300px; height: 50px; border-color: #8a6428; background: #221808; }
+.sH { right: 346px; top: 276px; width: 250px; height: 50px; }
+.sI { right: 36px; top: 334px; width: 300px; height: 52px; border-color: #8a6428; background: #221808; }
+.sJ { right: 346px; top: 334px; width: 250px; height: 52px; }
+.scr .p { font-size: 8px; letter-spacing: .12em; text-transform: uppercase; color: #9cc4d0; padding: 5px 8px 0; }
+.scr .d { padding: 3px 8px 0; font-size: 12px; }
+.scr .u { padding: 2px 8px 0; font-size: 10px; color: #a8c2cc; }
+.keys { display: flex; gap: 5px; padding: 8px 8px 0; }
+.key { flex: 1; height: 30px; background: #1e2838; border: 1px solid #4a5568; color: #d4deea; font-size: 9px; letter-spacing: .08em; display: flex; align-items: center; justify-content: center; }
+.key.on { border-color: #6ec9d8; color: #6ec9d8; box-shadow: inset 0 0 8px rgba(110,201,216,.18); }
+.leds { display: flex; gap: 7px; padding: 6px 8px 0; }
+.led { flex: 1; text-align: center; font-size: 8px; color: #a8c2cc; }
+.led i { display: block; width: 9px; height: 9px; border-radius: 50%; margin: 0 auto 3px; background: #3a4a5c; }
+.led.w i { background: #6ec9d8; box-shadow: 0 0 8px #6ec9d8; }
+.led.ok i { background: #5dca86; box-shadow: 0 0 8px #5dca86; }
+.meter { margin: 8px; height: 10px; background: #184050; border: 1px solid #2a4a55; }
+.meter i { display: block; width: 90%; height: 100%; background: linear-gradient(90deg, #6ec9d8, #d4a24a); }
+.orb { width: 16px; height: 16px; border-radius: 50%; background: #d4a24a; box-shadow: 0 0 14px rgba(212,162,74,.6); display: inline-block; vertical-align: middle; margin-right: 8px; }
+
+.hw { position: absolute; left: 40px; top: 408px; width: 1840px; height: 32px; z-index: 9; display: flex; gap: 10px; align-items: center; }
+.kn { width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #6a7588, #243044); border: 1px solid #4a5568; }
+.sd { width: 48px; height: 11px; background: #0c121c; border: 1px solid #4a5568; position: relative; }
+.sd i { position: absolute; left: 18px; top: -4px; width: 8px; height: 16px; background: #4a5568; }
+
+.lip { position: absolute; left: 0; right: 0; bottom: 0; height: 78px; z-index: 10; background: linear-gradient(180deg, #2a3a50, #10161e); box-shadow: inset 0 8px 16px rgba(0,0,0,.25); }
+.lip .row { position: absolute; left: 80px; right: 80px; top: 10px; height: 52px; display: flex; gap: 8px; }
+.lip .g { flex: 1; background: #0c2430; border: 1px solid #2a4a55; box-shadow: inset 0 0 10px rgba(0,0,0,.45); }
+
+.vig { position: absolute; inset: 0; z-index: 40; pointer-events: none; background: radial-gradient(ellipse 78% 70% at 50% 46%, transparent 50%, rgba(8,10,16,.5) 100%); }
+.grain { position: absolute; inset: 0; z-index: 41; pointer-events: none; opacity: .03; background-image: repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 3px); }
+</style>
+</head>
+<body>
+<div class="b">
+  <div class="room"></div>
+  <div class="panels"></div>
+  <div class="floor"><div class="fggrid"></div><div class="sheen"></div></div>
+
+  <div class="ceil">
+    <div class="bm bm1"></div><div class="bm bm2"></div>
+    <div class="du du1"></div><div class="du du2"></div><div class="du du3"></div>
+    <div class="cn cn1"></div><div class="cn cn2"></div><div class="cn cn3"></div><div class="cn cn4"></div><div class="cn cn5"></div>
+  </div>
+
+  <div class="strip mono">
+    <span class="dot"></span>
+    <div><span class="k">Feed</span><span class="v g">LIVE</span></div><div class="sep"></div>
+    <div><span class="k">Agents</span><span class="v c">1 / 5</span></div><div class="sep"></div>
+    <div><span class="k">Queued</span><span class="v">0</span></div><div class="sep"></div>
+    <div><span class="k">Complete</span><span class="v g">4</span></div><div class="sep"></div>
+    <div><span class="k">Errors</span><span class="v">0</span></div><div class="sep"></div>
+    <div><span class="k">Sync</span><span class="v">18:40Z</span></div><div class="sep"></div>
+    <div><span class="k">Health</span><span class="v g">OPERATIONAL</span></div>
+    <div class="paper">PAPER RESEARCH ONLY</div>
+  </div>
+
+  <div class="cove"></div>
+  <div class="br brl"></div><div class="br brr"></div>
+  <div class="recess"></div>
+  <div class="pano"><div class="glass">
+    <div class="ui mono">
+      <div class="box">
+        <h3>Task pipeline</h3>
+        <div class="flow">
+          <div><div class="ph">Inbox</div><div class="slot">empty bay</div></div>
+          <div><div class="ph">Assigned</div><div class="slot">empty bay</div></div>
+          <div class="wk"><div class="ph">Working</div><div class="tk"><div class="id">NB-1847</div><div class="tt">Coordinate + report to Jack</div><div class="meta"><span>New Bot</span><span>P1</span></div><div class="bar"><i style="width:90%"></i></div></div></div>
+          <div><div class="ph">Review</div><div class="tk"><div class="id">NB-1828</div><div class="tt">Early-buyer cluster</div><div class="meta"><span>Kai</span><span>parked</span></div><div class="bar"><i style="width:100%"></i></div></div></div>
+          <div class="apc"><div class="ph">Approval</div><div class="tk hold"><div class="id">NB-1847</div><div class="tt">Floor report gate</div><div class="meta"><span>Jack</span><span>HOLD</span></div><div class="bar"><i style="width:90%"></i></div></div></div>
+          <div class="dn"><div class="ph">Done</div>
+            <div class="tk done"><div class="id">NB-1831</div><div class="tt">Watchlist forensics</div><div class="meta"><span>Mira</span><span>5 tok</span></div><div class="bar"><i></i></div></div>
+            <div class="tk done"><div class="id">NB-1822</div><div class="tt">Paper watchlist</div><div class="meta"><span>Oak</span><span>quiet</span></div><div class="bar"><i></i></div></div>
+            <div class="tk done"><div class="id">NB-1819</div><div class="tt">Alpha lab archive</div><div class="meta"><span>Rex</span><span>ledger</span></div><div class="bar"><i></i></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="box">
+        <div class="ah"><div><div class="id">NB-1847 · ACTIVE</div><div class="t">Coordinate + report to Jack</div></div><div class="pri">P1</div></div>
+        <div class="kv">
+          <div><div class="k">Owner</div><div class="v">New Bot</div></div>
+          <div><div class="k">Stage</div><div class="v">Working</div></div>
+          <div><div class="k">Progress</div><div class="v">90%</div></div>
+          <div><div class="k">Operation</div><div class="v">Compile floor report</div></div>
+        </div>
+        <div class="rt">
+          <div class="lbl">Live routes / handoffs</div>
+          <div class="rr"><span class="ch">Mira</span><span class="ar">handoff ▸</span><span class="ch">New Bot</span><span>packets archived</span></div>
+          <div class="rr"><span class="ch">Kai</span><span class="ar">park ▸</span><span class="ch">Rex</span><span>cluster ledger</span></div>
+          <div class="rr"><span class="ch">New Bot</span><span class="ar">approval ▸</span><span class="ch">Jack</span><span>waiting</span></div>
+          <div class="tree">Jack<br>└ <span class="me">New Bot</span> floor lead<br>&nbsp;&nbsp;├ Mira <span class="ok">done</span> · Kai <span class="idling">idle</span> · Oak <span class="idling">idle</span> · Rex <span class="idling">idle</span></div>
+        </div>
+        <div class="foot"><span>Latest result · Watchlist packets archived · no alerts</span><b>HEALTH OPERATIONAL</b></div>
+      </div>
+      <div class="box">
+        <div class="stack">
+          <div class="hl"><div><div class="s">System health</div><div class="h">OPERATIONAL</div></div><div class="s">errors 0</div></div>
+          <div class="out"><h3>Recent output</h3>
+            <div class="ol"><span>Mira</span> Packets archived · 5 tokens</div>
+            <div class="ol"><span>Kai</span> Cluster module parked after demo</div>
+            <div class="ol"><span>Oak</span> Paper watchlist · no alerts</div>
+            <div class="ol"><span>Rex</span> Alpha lab ledger parked</div>
+            <div class="ol"><span>New Bot</span> Command center live · waiting on Jack</div>
+          </div>
+          <div class="ap"><div class="a">Approval state</div><div class="b">HOLD · waiting on Jack</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="seams"></div><div class="scan"></div><div class="bloom"></div>
+  </div></div>
+
+  <div class="shelf">
+    <div class="ax"><div class="mn">Cam 1 · Mira bay<b>SCAN IDLE · archive hold</b></div></div>
+    <div class="ax"><div class="mn">Cluster extract</div><svg class="wave" viewBox="0 0 280 22" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="#8b7cc0" stroke-width="1.2" points="0,12 24,10 48,16 72,7 96,14 120,6 150,12 180,8 210,13 240,6 280,11"/></svg></div>
+    <div class="ax"><div class="mn">Watch floor</div><svg class="wave" viewBox="0 0 280 22" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="#5dca86" stroke-width="1.2" points="0,11 50,11 100,10 160,11 220,12 280,11"/></svg></div>
+    <div class="ax"><div class="mn">Archive bay<b>LEDGER PARKED</b></div></div>
+  </div>
+  <div class="vents"><div class="vent"></div><div class="vent"></div><div class="vent"></div><div class="vent"></div><div class="vent"></div></div>
+
+  <div class="L"><div class="rv"></div></div>
+  <div class="R"><div class="rv"></div></div>
+
+  <div class="tape"><div class="in mono">
+    <h4>Live operations tape</h4>
+    <div class="ev rcv"><span class="t">18:40:12 received</span><b>NB-1847</b> Coordinate + report to Jack</div>
+    <div class="ev asg"><span class="t">18:39:44 assigned</span>New Bot · floor lead</div>
+    <div class="ev tol"><span class="t">18:38:21 tool</span>Mira · probe · token scan</div>
+    <div class="ev evi"><span class="t">18:36:08 evidence</span>5 packets archived</div>
+    <div class="ev rvw"><span class="t">18:34:55 review</span>NB-1828 cluster · Kai</div>
+    <div class="ev apv"><span class="t">18:33:12 approval</span>NB-1847 waiting on Jack</div>
+    <div class="ev cmp"><span class="t">18:31:40 complete</span>NB-1831 forensics done</div>
+    <div class="ev ho"><span class="t">18:29:18 handoff</span>Mira ▸ New Bot packets</div>
+  </div></div>
+  <div class="need"><div class="in mono">
+    <h4>Needs you</h4>
+    <div class="nc"><div class="k">Approval · NB-1847</div><div class="tt">Coordinate + report to Jack</div><div class="d">Command center live · waiting on Jack<br>New Bot · P1 · 90%</div></div>
+    <div class="holdq">Hold queue · 1 item</div>
+  </div></div>
+  <div class="side2"><div class="in mono"><div class="k">Sync / domain</div><div class="v">18:40:00Z</div><div class="v" style="font-size:10px;color:#9cc4d0;margin-top:8px">grokbottech.com<br>paper research only</div></div></div>
+
+  <div class="island mira">
+    <div class="seat"></div><div class="sh"></div>
+    <div class="flm"></div>
+    <div class="gan"><div class="a"></div><div class="h"></div></div>
+    <div class="lk"><i></i><i></i><i></i><i></i></div>
+    <div class="who"><img src="../assets/runner-deep.png" alt="" width="101" height="156" /></div>
+    <div class="pet"><img src="../assets/scanslime.png" alt="" width="67" height="62" /></div>
+    <div class="base"></div>
+    <div class="sc mono">PKT 01..05<br>HASH ok<br>ARCHIVE HOLD</div>
+    <div class="tag">Mira · forensics</div>
+  </div>
+
+  <div class="island kai">
+    <div class="seat"></div><div class="sh"></div>
+    <div class="ks">
+      <div class="m"><svg viewBox="0 0 70 96" width="100%" height="100%" aria-hidden="true"><g fill="none" stroke="#8b7cc0" stroke-width="1"><path d="M12 24 L28 36 L22 60"/><path d="M28 36 L50 26 L60 50"/><path d="M22 60 L42 70 L60 50"/></g><g fill="#c4b5fd"><circle cx="12" cy="24" r="2.5"/><circle cx="28" cy="36" r="2.7"/><circle cx="50" cy="26" r="2.1"/><circle cx="22" cy="60" r="2.3"/><circle cx="42" cy="70" r="2"/><circle cx="60" cy="50" r="2.5"/><circle cx="36" cy="16" r="1.6"/><circle cx="10" cy="46" r="1.5"/></g></svg></div>
+      <div class="m w"><svg viewBox="0 0 100 96" width="100%" height="100%" aria-hidden="true"><rect x="6" y="12" width="24" height="11" fill="#3a2a60"/><rect x="6" y="28" width="36" height="11" fill="#5a4a88"/><rect x="6" y="44" width="16" height="11" fill="#2a2048"/><rect x="6" y="60" width="28" height="11" fill="#4a3a70"/><rect x="56" y="16" width="11" height="11" fill="#8b7cc0"/><rect x="72" y="28" width="11" height="11" fill="#6a5a98"/><rect x="60" y="46" width="11" height="11" fill="#c4b5fd"/><rect x="80" y="60" width="11" height="11" fill="#8b7cc0"/></svg></div>
+      <div class="m"></div>
+    </div>
+    <div class="who"><img src="../assets/runner-cluster.png" alt="" width="105" height="156" /></div>
+    <div class="pet"><img src="../assets/foldfox.png" alt="" width="58" height="68" /></div>
+    <div class="base"></div><div class="kb"></div><div class="case"></div>
+    <div class="tag">Kai · analysis</div>
+  </div>
+
+  <div class="island oak">
+    <div class="seat"></div><div class="sh"></div>
+    <div class="wc"></div>
+    <div class="rad"><svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true"><circle cx="50" cy="50" r="38" fill="none" stroke="#2d6a4a" stroke-width="1.2"/><circle cx="50" cy="50" r="26" fill="none" stroke="#245a40" stroke-width="1"/><circle cx="50" cy="50" r="14" fill="none" stroke="#245a40" stroke-width="1"/><path d="M50 50 L50 12" stroke="#5dca86" stroke-width="1.2"/><path d="M50 50 L84 64" stroke="#2d6a4a" stroke-width="1"/><circle cx="68" cy="38" r="2.3" fill="#86efac"/><circle cx="40" cy="66" r="1.8" fill="#4a8068"/></svg></div>
+    <div class="wl mono">WL-04 quiet<br>WL-11 quiet<br>WL-19 quiet<br>WL-22 quiet<br>WL-31 quiet</div>
+    <div class="who"><img src="../assets/runner-watch.png" alt="" width="103" height="156" /></div>
+    <div class="pet"><img src="../assets/voltbug.png" alt="" width="48" height="64" /></div>
+    <div class="base"></div>
+    <div class="tag">Oak · watch</div>
+  </div>
+
+  <div class="island rex">
+    <div class="seat"></div><div class="sh"></div>
+    <div class="lp"></div>
+    <div class="who"><img src="../assets/runner-lab.png" alt="" width="106" height="156" /></div>
+    <div class="pet"><img src="../assets/archivowl.png" alt="" width="63" height="70" /></div>
+    <div class="cab"><div class="sl"></div><div class="sl"></div><div class="sl"></div><div class="sl"></div><div class="sl"></div><div class="sl"></div></div>
+    <div class="tr"></div><div class="base"></div><div class="stmp"></div>
+    <div class="tag">Rex · archive</div>
+  </div>
+
+  <div class="pit">
+    <div class="nch"></div><div class="nsh"></div><div class="bsh"></div><div class="wash"></div>
+    <div class="nb"><img src="../assets/runner-coord.png" alt="" width="167" height="250" /></div>
+    <div class="bun"><img src="../assets/bunbot.png" alt="" width="83" height="124" /></div>
+    <div class="wing left"></div>
+    <div class="ntag">New Bot · command</div>
+    <div class="scr sK mono"><div class="p">Uplink</div><div class="d" style="font-size:11px">Jack channel HOLD</div></div>
+    <div class="scr sL mono"><div class="p">Bunbot</div><div class="d" style="font-size:11px">floor companion</div></div>
+    <div class="scr sA mono"><div class="p">Active ticket</div><div class="d">NB-1847 · Coordinate + report to Jack</div><div class="u">Owner New Bot · P1 · Working 90%<br>Compile floor report · packets archived</div></div>
+    <div class="scr sB mono"><div class="p">Delegation</div><div class="keys"><div class="key">Mira</div><div class="key">Kai</div><div class="key">Oak</div><div class="key on">Rex</div></div><div class="u" style="padding-top:8px">Park cluster → archive</div></div>
+    <div class="scr sC mono"><div class="p">Route preview</div><div class="d" style="font-size:11px">Mira ▸ New Bot ▸ Jack</div><div class="u">packets in · report hold</div></div>
+    <div class="scr sD mono"><div class="p">Floor mood</div><div class="d">focused · paper only</div></div>
+    <div class="scr sE mono"><div class="p">Agent status</div><div class="leds"><div class="led w"><i></i>NB</div><div class="led ok"><i></i>Mira</div><div class="led"><i></i>Kai</div><div class="led"><i></i>Oak</div><div class="led"><i></i>Rex</div></div></div>
+    <div class="scr sF mono"><div class="p">Task progress 90%</div><div class="meter"><i></i></div></div>
+    <div class="scr sG mono"><div class="p">Approval</div><div class="d" style="padding-top:6px"><span class="orb"></span>HOLD Jack</div></div>
+    <div class="scr sH mono"><div class="p">Latest result</div><div class="u">Watchlist packets archived · no alerts</div></div>
+    <div class="scr sI mono"><div class="p">Needs you</div><div class="d" style="color:#d4a24a">NB-1847 · HOLD Jack</div></div>
+    <div class="scr sJ mono"><div class="p">Hierarchy</div><div class="u">Jack ▸ New Bot ▸ Mira Kai Oak Rex</div></div>
+    <div class="hw">
+      <div class="kn"></div><div class="sd"><i></i></div><div class="kn"></div><div class="sd"><i></i></div>
+      <div class="kn"></div><div class="sd"><i></i></div><div class="kn"></div><div class="sd"><i></i></div>
+      <div class="kn"></div><div class="sd"><i></i></div><div class="kn"></div><div class="sd"><i></i></div>
+      <div class="kn"></div><div class="sd"><i></i></div><div class="kn"></div><div class="sd"><i></i></div>
+    </div>
+    <div class="lip"><div class="row"><div class="g"></div><div class="g"></div><div class="g"></div><div class="g"></div><div class="g"></div><div class="g"></div></div></div>
+  </div>
+
+  <div class="vig"></div>
+  <div class="grain"></div>
+</div>
+</body>
+</html>
