@@ -1,22 +1,72 @@
-/* Node tests for HQ station map, status comparison, and event diffs. */
+/* Node tests for HQ station map, aisle graph, status comparison, and event diffs. */
 const nav = require("./office-nav.js");
 const assert = require("assert");
+
+function pathPts(from, to) {
+  return nav.chamfer(nav.nodePath(from, to));
+}
 
 (function seatsExist() {
   ["coord", "deep", "cluster", "watch", "lab"].forEach((id) => {
     const s = nav.STATIONS[id];
     assert.ok(s && s.seat && Number.isFinite(s.seat.x) && Number.isFinite(s.seat.y), id + " needs a seat");
     assert.ok(s.companion && Number.isFinite(s.companion.dx), id + " needs companion offset");
+    assert.ok(s.approach && nav.NODES[s.approach], id + " needs an approach node");
+    assert.ok(nav.NODES[id], id + " needs a graph seat node");
+    assert.strictEqual(nav.NODES[id].x, s.seat.x, id + " graph seat x must match seated2");
+    assert.strictEqual(nav.NODES[id].y, s.seat.y, id + " graph seat y must match seated2");
   });
 })();
 
-(function walkApisRemoved() {
-  assert.strictEqual(typeof nav.findPath, "undefined");
-  assert.strictEqual(typeof nav.travelPlan, "undefined");
-  assert.strictEqual(typeof nav.pathFromPoint, "undefined");
-  assert.strictEqual(typeof nav.chamfer, "undefined");
-  assert.ok(!nav.EDGES, "waypoint edges must not ship with the command center");
-  assert.ok(!nav.NODES, "walk node graph must not ship with the command center");
+(function pathCoordToReport() {
+  const ids = nav.findPath("coord", "report");
+  assert.deepStrictEqual(ids, ["coord", "coord_ap", "west", "hub", "report"]);
+  const hit = nav.pathBlocked(pathPts("coord", "report"));
+  assert.strictEqual(hit, null, "coord→report must stay in aisles, hit " + (hit && hit.hit));
+})();
+
+(function pathDeepToLab() {
+  const ids = nav.findPath("deep", "lab");
+  assert.ok(ids.includes("gap"), "north seats reach south seats via the desk gap");
+  assert.ok(!ids.includes("coord"), "must not cut the SW desk");
+  const hit = nav.pathBlocked(pathPts("deep", "lab"));
+  assert.strictEqual(hit, null, "deep→lab blocked by " + (hit && hit.hit));
+})();
+
+(function pathHandoffAisles() {
+  [["coord", "deep"], ["deep", "cluster"], ["cluster", "lab"], ["watch", "lab"], ["coord", "lab"]].forEach(([a, b]) => {
+    const hit = nav.pathBlocked(pathPts(a, b));
+    assert.strictEqual(hit, null, a + "→" + b + " hit " + (hit && hit.hit));
+  });
+})();
+
+(function pathAllHomesToReport() {
+  ["coord", "deep", "cluster", "watch", "lab"].forEach((id) => {
+    const hit = nav.pathBlocked(pathPts(id, "report"));
+    assert.strictEqual(hit, null, id + "→report hit " + (hit && hit.hit));
+  });
+})();
+
+(function seatsOutsideFurniture() {
+  Object.keys(nav.STATIONS).forEach((id) => {
+    const seat = nav.STATIONS[id].seat;
+    nav.BLOCKED.forEach((b) => {
+      assert.ok(!nav.pointInPoly(seat, b.poly), id + " seat inside " + b.name);
+    });
+  });
+})();
+
+(function travelPlanCaps() {
+  const short = nav.travelPlan(40);
+  const long = nav.travelPlan(900);
+  assert.ok(short.T < 1.2, "short hops stay brief");
+  assert.ok(long.v >= 90 && long.v <= 130);
+  assert.ok(Math.abs(nav.distanceAt(long, 0)) < 1e-6);
+  assert.ok(Math.abs(nav.distanceAt(long, long.T) - long.length) < 0.5);
+  const mid = nav.distanceAt(long, long.ta + 0.2);
+  const mid2 = nav.distanceAt(long, long.ta + 0.4);
+  const rate = (mid2 - mid) / 0.2;
+  assert.ok(Math.abs(rate - long.v) < 1, "mid-route speed should be cruise");
 })();
 
 (function routesConnectStations() {
