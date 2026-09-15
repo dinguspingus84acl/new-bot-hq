@@ -85,14 +85,14 @@
 
   /* Thin aisle traces in image-percent space. Packets travel these paths. */
   const ROUTES = [
-    { id: "coord-deep", a: "coord", b: "deep", kind: "report", d: "M 31.8 69.2 C 36.5 58.0 38.8 46.0 39.8 35.2" },
-    { id: "coord-cluster", a: "coord", b: "cluster", kind: "report", d: "M 31.8 69.2 C 40.0 62.0 50.5 48.0 55.4 33.6" },
-    { id: "coord-watch", a: "coord", b: "watch", kind: "report", d: "M 31.8 69.2 C 44.0 64.0 62.0 50.0 71.2 33.8" },
-    { id: "coord-lab", a: "coord", b: "lab", kind: "handoff", d: "M 31.8 69.2 C 42.0 76.8 52.0 76.6 60.6 69.0" },
-    { id: "deep-cluster", a: "deep", b: "cluster", kind: "handoff", d: "M 39.8 35.2 C 45.2 30.4 50.0 30.2 55.4 33.6" },
-    { id: "cluster-watch", a: "cluster", b: "watch", kind: "handoff", d: "M 55.4 33.6 C 61.0 30.0 66.4 30.2 71.2 33.8" },
-    { id: "deep-lab", a: "deep", b: "lab", kind: "handoff", d: "M 39.8 35.2 C 44.5 48.0 52.5 60.5 60.6 69.0" },
-    { id: "watch-lab", a: "watch", b: "lab", kind: "report", d: "M 71.2 33.8 C 70.2 48.0 66.4 60.0 60.6 69.0" }
+    { id: "coord-deep", a: "coord", b: "deep", kind: "report", d: "M 31.8 69.2 C 34.8 58.5 38.2 47.0 39.8 35.2" },
+    { id: "coord-cluster", a: "coord", b: "cluster", kind: "report", d: "M 31.8 69.2 C 38.5 60.5 49.0 47.5 55.4 33.6" },
+    { id: "coord-watch", a: "coord", b: "watch", kind: "report", d: "M 31.8 69.2 C 44.5 62.0 62.5 49.5 71.2 33.8" },
+    { id: "coord-lab", a: "coord", b: "lab", kind: "handoff", d: "M 31.8 71.2 C 41.8 80.4 51.6 80.2 60.6 71.0" },
+    { id: "deep-cluster", a: "deep", b: "cluster", kind: "handoff", d: "M 39.8 37.4 C 45.2 43.8 50.4 43.6 55.4 35.8" },
+    { id: "cluster-watch", a: "cluster", b: "watch", kind: "handoff", d: "M 55.4 35.8 C 61.2 43.4 66.6 43.6 71.2 36.0" },
+    { id: "deep-lab", a: "deep", b: "lab", kind: "handoff", d: "M 39.8 35.2 C 44.8 49.5 52.8 61.5 60.6 69.0" },
+    { id: "watch-lab", a: "watch", b: "lab", kind: "report", d: "M 71.2 33.8 C 69.8 49.0 65.8 61.0 60.6 69.0" }
   ];
 
   const OCCLUDERS = [

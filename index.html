@@ -172,18 +172,18 @@ header.top h1 {
 }
 .routes path {
   fill: none;
-  stroke: rgba(103, 232, 249, 0.16);
-  stroke-width: 0.35;
+  stroke: rgba(103, 232, 249, 0.08);
+  stroke-width: 1;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
 }
-.routes path.kind-handoff { stroke: rgba(167, 139, 250, 0.16); }
+.routes path.kind-handoff { stroke: rgba(167, 139, 250, 0.08); }
 .routes path.hot {
-  stroke: rgba(103, 232, 249, 0.72);
+  stroke: rgba(103, 232, 249, 0.78);
 }
-.routes path.kind-handoff.hot { stroke: rgba(167, 139, 250, 0.75); }
+.routes path.kind-handoff.hot { stroke: rgba(167, 139, 250, 0.8); }
 .routes path.selected {
-  stroke: rgba(125, 211, 252, 0.55);
+  stroke: rgba(125, 211, 252, 0.42);
 }
 .packet {
   fill: #e0f2fe;
@@ -652,6 +652,7 @@ footer {
   .critter { width: 46px; height: 46px; }
   header.top h1 { font-size: 1.25rem; }
   .cmdbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cmdbar .cell:last-child { grid-column: 1 / -1; }
 }
 @media (prefers-reduced-motion: reduce) {
   .scan, .done-spark, .packet, .activity-list li.enter, .drawer, .station.status-needs_approval.pulse-once .status-chip {

@@ -454,15 +454,35 @@
     flashRoute(found.route.id, true);
     const svg = document.getElementById("routes");
     const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    const len = path.getTotalLength();
+    let len = 0;
+    try {
+      len = path.getTotalLength();
+    } catch (e) {
+      hq.packets -= 1;
+      flashRoute(found.route.id, false);
+      pumpPackets();
+      return;
+    }
     const dur = N.clamp(0.5 + len / 90, 0.5, 1.2);
-    dot.setAttribute("r", "0.7");
+    dot.setAttribute("r", "0.85");
     dot.setAttribute("class", "packet " + job.kind);
     svg.appendChild(dot);
     const t0 = performance.now();
+    function finish() {
+      if (dot.parentNode) dot.remove();
+      flashRoute(found.route.id, false);
+      hq.packets -= 1;
+      const dest = document.querySelector('.station[data-id="' + job.to + '"] .monitor-fx');
+      if (dest) {
+        dest.style.boxShadow = "0 0 12px rgba(103,232,249,.45)";
+        setTimeout(() => { dest.style.boxShadow = ""; }, 420);
+      }
+      pumpPackets();
+    }
     function step(now) {
-      if (hq.hidden && document.hidden) {
-        /* freeze in place until visible; keep advancing time so it still finishes */
+      if (!path.getAttribute("d")) {
+        finish();
+        return;
       }
       const u = Math.min(1, (now - t0) / (dur * 1000));
       const s = found.reverse ? 1 - u : u;
@@ -473,15 +493,7 @@
         requestAnimationFrame(step);
         return;
       }
-      dot.remove();
-      flashRoute(found.route.id, false);
-      hq.packets -= 1;
-      const dest = document.querySelector('.station[data-id="' + job.to + '"] .monitor-fx');
-      if (dest) {
-        dest.style.boxShadow = "0 0 12px rgba(103,232,249,.45)";
-        setTimeout(() => { dest.style.boxShadow = ""; }, 420);
-      }
-      pumpPackets();
+      finish();
     }
     requestAnimationFrame(step);
   }
