@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1920" />
+<title>New Bot HQ — Pixel Office Ops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg: #07060d;
+  --ink: #eef3ff;
+  --muted: #9aa8c7;
+  --line: rgba(148, 163, 184, 0.22);
+  --glass: rgba(8, 12, 24, 0.78);
+  --cyan: #67e8f9;
+  --violet: #a78bfa;
+  --green: #4ade80;
+  --amber: #fbbf24;
+  --red: #f87171;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+}
+img {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.mono {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Artboard: office 1498×843 (78% × 16:9), rail 360, bar 44, strip 96.
+   Bottom empty margin 45px = 4.2% of 1080. */
+.board {
+  width: 1920px;
+  height: 1080px;
+  display: grid;
+  grid-template-columns: 1498px 360px;
+  grid-template-rows: 44px 843px 96px;
+  grid-template-areas:
+    "bar bar"
+    "office rail"
+    "strip rail";
+  column-gap: 14px;
+  row-gap: 8px;
+  padding: 36px 36px 45px 12px;
+}
+
+.bar {
+  grid-area: bar;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 16px;
+  background: var(--glass);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--green);
+}
+.live i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+}
+.stat { display: flex; align-items: baseline; gap: 8px; }
+.stat .k {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.stat .v { font-size: 14px; font-weight: 700; }
+.sep { width: 1px; height: 18px; background: var(--line); }
+.tone-cyan { color: var(--cyan); }
+.tone-green { color: var(--green); }
+.tone-amber { color: var(--amber); }
+.tone-red { color: var(--red); }
+.paper {
+  margin-left: auto;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.office {
+  grid-area: office;
+  position: relative;
+  width: 1498px;
+  height: 843px;
+  overflow: hidden;
+  background: #0b0914;
+}
+.office .floor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Restrained station light — not a room-wide wash. */
+.cast {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+}
+.cast-mira {
+  left: 28%;
+  top: 14%;
+  width: 22%;
+  height: 28%;
+  background: radial-gradient(ellipse, rgba(103, 232, 249, 0.22), transparent 68%);
+}
+.cast-newbot {
+  left: 20%;
+  top: 44%;
+  width: 16%;
+  height: 22%;
+  background: radial-gradient(ellipse, rgba(167, 139, 250, 0.16), transparent 70%);
+}
+
+.scene { position: absolute; inset: 0; z-index: 40; }
+
+.actor {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  margin-left: calc(var(--w) / -2);
+  margin-top: calc(var(--h) * -1);
+  z-index: var(--z);
+  pointer-events: none;
+}
+.runner { --w: 68px; --h: 94px; }
+.critter { --w: 42px; --h: 42px; }
+.shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 1px;
+  width: 40%;
+  height: 7px;
+  margin-left: -20%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.55), transparent 70%);
+}
+.sprite {
+  position: absolute;
+  inset: 0 0 6px 0;
+}
+.actor img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+}
+.actor.face-left img { transform: scaleX(-1); }
+
+.hud {
+  position: absolute;
+  z-index: 20;
+  padding: 5px 8px 6px;
+  background: rgba(6, 10, 20, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+.hud .name {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1.15;
+}
+.hud .state {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.15;
+}
+.hud .task {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.lamp {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #64748b;
+  flex: 0 0 auto;
+}
+.hud.cyan { border-color: rgba(103, 232, 249, 0.55); }
+.hud.cyan .name, .hud.cyan .state { color: var(--cyan); }
+.hud.cyan .lamp { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+.hud.violet { border-color: rgba(167, 139, 250, 0.45); }
+.hud.violet .name, .hud.violet .state { color: var(--violet); }
+.hud.violet .lamp { background: var(--violet); box-shadow: 0 0 6px var(--violet); }
+.hud.red { border-color: rgba(248, 113, 113, 0.4); }
+.hud.red .name, .hud.red .state { color: var(--red); }
+.hud.red .lamp { background: var(--red); box-shadow: 0 0 6px var(--red); }
+.hud.quiet .name, .hud.quiet .state { color: #cbd5e1; }
+.hud.quiet .lamp { background: #64748b; }
+.lamp.red { background: var(--red); box-shadow: 0 0 6px var(--red); }
+.meter {
+  margin-top: 5px;
+  height: 3px;
+  background: #0b1220;
+  border: 1px solid #334155;
+  overflow: hidden;
+}
+.meter > i { display: block; height: 100%; }
+.hud.cyan .meter > i { background: var(--cyan); }
+.hud.violet .meter > i { background: var(--violet); }
+.hud.red .meter > i { background: var(--red); }
+.hud.quiet .meter > i { background: #475569; }
+.hud.blocked .state { color: var(--red); }
+.hud.blocked .meter > i { background: var(--red); }
+
+/* Future motion hooks — paused for this still. */
+.scanline, .cursor, .radar-sweep, .scanner-beam, .node-glow, .archive-lamp, .deleg-lamp, .done-flash {
+  pointer-events: none;
+}
+.scanline {
+  position: absolute;
+  left: 0; right: 0; top: 34%;
+  height: 22%;
+  background: linear-gradient(transparent, rgba(103, 232, 249, 0.18), transparent);
+  animation: scan-move 3.6s linear infinite;
+}
+.cursor {
+  position: absolute;
+  width: 7px;
+  height: 9px;
+  right: 10px;
+  bottom: 10px;
+  background: var(--cyan);
+  clip-path: polygon(0 0, 100% 70%, 55% 70%, 70% 100%, 52% 100%, 38% 70%, 0 70%);
+  animation: cursor-blink 1.1s steps(1) infinite;
+}
+.radar-sweep {
+  position: absolute;
+  inset: 8px 10px auto auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  background: conic-gradient(from 200deg, transparent 70%, rgba(74, 222, 128, 0.45));
+  animation: spin 4.8s linear infinite;
+}
+.scanner-beam {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 6px;
+  height: 2px;
+  background: rgba(103, 232, 249, 0.55);
+  animation: scan-move 2.8s linear infinite;
+}
+.node-glow {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(167, 139, 250, 0.35);
+}
+.archive-lamp {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  background: #b45309;
+  opacity: 0.45;
+}
+.deleg-lamp {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--violet);
+  box-shadow: 0 0 6px var(--violet);
+  animation: pulse-once 1.2s ease-out 1;
+}
+.packet {
+  position: absolute;
+  z-index: 55;
+  left: 48.6%;
+  top: 38.8%;
+  width: max-content;
+  margin-left: -64px;
+  margin-top: -12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: rgba(8, 12, 24, 0.92);
+  border: 1px solid rgba(167, 139, 250, 0.7);
+  color: #ddd6fe;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.25);
+  animation: packet-hold 1.6s ease-in-out 1;
+}
+.packet b { color: var(--violet); font-weight: 700; }
+.routes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 25;
+}
+.routes path {
+  fill: none;
+  stroke: rgba(167, 139, 250, 0.55);
+  stroke-width: 1.4;
+  stroke-dasharray: 5 6;
+}
+
+.rail {
+  grid-area: rail;
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+.panel {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  padding: 12px 12px 10px;
+  min-height: 0;
+}
+.panel h2 {
+  margin: 0 0 10px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.needs { flex: 0 0 auto; }
+.activity { flex: 1 1 auto; }
+.need {
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  background: rgba(28, 18, 6, 0.55);
+  padding: 10px 10px 9px;
+  margin-bottom: 8px;
+}
+.need:last-child { margin-bottom: 0; }
+.need.block {
+  border-color: rgba(248, 113, 113, 0.45);
+  background: rgba(32, 10, 12, 0.5);
+}
+.need .kind {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.need.block .kind { color: var(--red); }
+.need .title {
+  font-size: 15px;
+  font-weight: 650;
+  margin-top: 4px;
+  line-height: 1.25;
+}
+.need .why {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+  line-height: 1.35;
+}
+.events { list-style: none; margin: 0; padding: 0; }
+.events li {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 10px;
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 1.35;
+}
+.events li:first-child { border-top: 0; padding-top: 0; }
+.events .t { color: var(--muted); font-size: 12px; }
+.events .fresh {
+  animation: row-in 180ms ease-out both;
+  background: rgba(167, 139, 250, 0.08);
+  margin: 0 -6px;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+.events .fresh .body { color: #f8fafc; }
+
+.strip {
+  grid-area: strip;
+  height: 96px;
+  display: grid;
+  grid-template-columns: 1.4fr 118px 108px 150px 1.15fr 1.25fr;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--glass);
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  box-shadow: 0 0 24px rgba(103, 232, 249, 0.08);
+}
+.strip .lbl {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.strip .id { font-size: 12px; color: var(--cyan); font-weight: 700; letter-spacing: 0.06em; }
+.strip .title { font-size: 18px; font-weight: 700; margin-top: 3px; line-height: 1.15; }
+.strip .big { font-size: 16px; font-weight: 650; margin-top: 3px; }
+.strip .barline {
+  margin-top: 8px;
+  height: 6px;
+  background: #0b1220;
+  border: 1px solid #334155;
+}
+.strip .barline > i { display: block; width: 72%; height: 100%; background: var(--cyan); }
+
+@keyframes scan-move { from { transform: translateY(-10%); } to { transform: translateY(220%); } }
+@keyframes cursor-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse-once { 0% { opacity: 0.3; } 40% { opacity: 1; } 100% { opacity: 0.85; } }
+@keyframes packet-hold { from { opacity: 0; } to { opacity: 1; } }
+@keyframes row-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+body.is-paused *,
+body.is-paused *::before,
+body.is-paused *::after {
+  animation: none !important;
+}
+</style>
+</head>
+<body class="is-paused">
+<div class="board">
+  <header class="bar mono" aria-label="System status">
+    <div class="live"><i></i>LIVE</div>
+    <div class="sep"></div>
+    <div class="stat"><span class="k">Active agents</span><span class="v tone-cyan">2 / 5</span></div>
+    <div class="sep"></div>
+    <div class="stat"><span class="k">Queued</span><span class="v">1</span></div>
+    <div class="sep"></div>
+    <div class="stat"><span class="k">Completed</span><span class="v tone-green">3</span></div>
+    <div class="sep"></div>
+    <div class="stat"><span class="k">Errors</span><span class="v">0</span></div>
+    <div class="sep"></div>
+    <div class="stat"><span class="k">Last sync</span><span class="v">18:41:02Z</span></div>
+    <div class="sep"></div>
+    <div class="stat"><span class="k">System health</span><span class="v tone-green">Operational</span></div>
+    <div class="paper">Paper research only</div>
+  </header>
+
+  <div class="office" aria-label="HQ pixel office">
+    <img class="floor" src="../assets/floor.jpg" alt="Original isometric pixel office" width="1280" height="720" />
+    <div class="cast cast-mira" data-fx="work-light"></div>
+    <div class="cast cast-newbot" data-fx="handoff-light"></div>
+    <svg class="routes" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M 42.4 25.6 C 47.6 38.8 52.8 38.8 56.6 25.8" />
+    </svg>
+
+    <div class="scene">
+      <!-- Feet at chair stations. Identical runner box. No walk animation. -->
+      <div class="actor runner" style="--x:40.4%; --y:29.6%; --z:362" data-id="mira">
+        <div class="shadow"></div>
+        <div class="sprite"><img src="../assets/runner-deep.png" alt="Mira" width="220" height="339" /></div>
+      </div>
+      <div class="actor critter" style="--x:44.6%; --y:31.0%; --z:364" data-id="scanslime">
+        <div class="shadow"></div>
+        <div class="sprite"><img src="../assets/scanslime.png" alt="Scanslime" width="282" height="260" /></div>
+      </div>
+
+      <div class="actor runner face-left" style="--x:57.0%; --y:29.8%; --z:364" data-id="kai">
+        <div class="shadow"></div>
+        <div class="sprite"><img src="../assets/runner-cluster.png" alt="Kai" width="220" height="328" /></div>
+      </div>
+      <div class="actor critter" style="--x:61.2%; --y:31.2%; --z:366" data-id="foldfox">
+        <div class="shadow"></div>
+        <div class="sprite"><img src="../assets/foldfox.png" alt="Foldfox" width="259" height="304" /></div>
+      </div>
+
+      <div class="actor runner face-left" style="--x:73.8%; --y:29.8%; --z:364" data-id="oak">
+        <div class="shadow"></div>
+        <div class="sprite"><img src="../assets/runner-watch.png" alt="Oak" width="220" height="332" /></div>
+      </div>
+      <div class="actor critter" style="--x:69.2%; --y:31.2%; --z:366" data-id="voltbug">
+        <div class="shadow"></div>
+        <div class="sprite"><img src="../assets/voltbug.png" alt="Voltbug" width="267" height="359" /></div>
+      </div>
+
+      <div class="actor runner" style="--x:31.8%; --y:57.4%; --z:628" data-id="newbot">
+        <div class="shadow"></div>
+        <div class="sprite"><img src="../assets/runner-coord.png" alt="New Bot" width="220" height="329" /></div>
+      </div>
+      <div class="actor critter" style="--x:37.0%; --y:59.0%; --z:632" data-id="bunbot">
+        <div class="shadow"></div>
+        <div class="sprite"><img src="../assets/bunbot.png" alt="Bunbot" width="239" height="359" /></div>
+      </div>
+
+      <div class="actor runner face-left" style="--x:69.8%; --y:56.8%; --z:628" data-id="rex">
+        <div class="shadow"></div>
+        <div class="sprite"><img src="../assets/runner-lab.png" alt="Rex" width="220" height="325" /></div>
+      </div>
+      <div class="actor critter" style="--x:64.8%; --y:58.4%; --z:632" data-id="archivowl">
+        <div class="shadow"></div>
+        <div class="sprite"><img src="../assets/archivowl.png" alt="Archivowl" width="277" height="307" /></div>
+      </div>
+    </div>
+
+    <div class="hud cyan" style="left:38.4%; top:14.6%; width:142px" data-desk="mira">
+      <div class="scanner-beam" data-fx="mira-scanner"></div>
+      <div class="scanline" data-fx="monitor-scan"></div>
+      <div class="cursor" data-fx="cursor"></div>
+      <div class="name">MIRA</div>
+      <div class="state"><i class="lamp"></i>WORKING</div>
+      <div class="task">Token forensics · 72%</div>
+      <div class="meter"><i style="width:72%"></i></div>
+    </div>
+    <div class="hud quiet blocked" style="left:55.4%; top:14.4%; width:142px" data-desk="kai">
+      <div class="node-glow" data-fx="kai-nodes"></div>
+      <div class="name">KAI</div>
+      <div class="state"><i class="lamp red"></i>BLOCKED</div>
+      <div class="task">Cluster wait · 41%</div>
+      <div class="meter"><i style="width:41%"></i></div>
+    </div>
+    <div class="hud quiet" style="left:72.2%; top:14.6%; width:142px" data-desk="oak">
+      <div class="radar-sweep" data-fx="oak-radar"></div>
+      <div class="name">OAK</div>
+      <div class="state"><i class="lamp"></i>IDLE</div>
+      <div class="task">Watchlist · —</div>
+      <div class="meter"><i style="width:100%"></i></div>
+    </div>
+    <div class="hud violet" style="left:22.8%; top:45.6%; width:142px" data-desk="newbot">
+      <div class="deleg-lamp" data-fx="newbot-deleg"></div>
+      <div class="name">NEW BOT</div>
+      <div class="state"><i class="lamp"></i>HANDOFF</div>
+      <div class="task">Floor report · 90%</div>
+      <div class="meter"><i style="width:90%"></i></div>
+    </div>
+    <div class="hud quiet" style="left:52.4%; top:45.8%; width:142px" data-desk="rex">
+      <div class="archive-lamp" data-fx="rex-archive"></div>
+      <div class="name">REX</div>
+      <div class="state"><i class="lamp"></i>IDLE</div>
+      <div class="task">Archive · —</div>
+      <div class="meter"><i style="width:100%"></i></div>
+    </div>
+
+    <div class="packet mono" data-fx="task-packet"> <b>NB-1842</b> · Mira → Kai</div>
+  </div>
+
+  <aside class="rail" aria-label="Operations">
+    <section class="panel needs">
+      <h2>Needs you <span class="mono" style="color:#fbbf24">2</span></h2>
+      <div class="need">
+        <div class="kind mono">Approval</div>
+        <div class="title">NB-1847 · Floor report</div>
+        <div class="why">Waiting on Jack before New Bot can close the shift brief.</div>
+      </div>
+      <div class="need block">
+        <div class="kind mono">Blocker</div>
+        <div class="title">NB-1838 · Cluster extract</div>
+        <div class="why">Kai is missing Mira’s token packet. No other input required.</div>
+      </div>
+    </section>
+    <section class="panel activity">
+      <h2>Activity</h2>
+      <ul class="events mono">
+        <li class="fresh"><span class="t">18:41:02</span><span class="body">Packet queued · Mira → Kai</span></li>
+        <li><span class="t">18:40:44</span><span class="body">New Bot · approval sent to Jack</span></li>
+        <li><span class="t">18:40:12</span><span class="body">New Bot · floor report compiled</span></li>
+        <li><span class="t">18:39:18</span><span class="body">Oak · watchlist quiet, no alerts</span></li>
+        <li><span class="t">18:38:06</span><span class="body">Rex · alpha ledger parked</span></li>
+        <li><span class="t">18:36:51</span><span class="body">Kai · cluster paused, waiting evidence</span></li>
+      </ul>
+    </section>
+  </aside>
+
+  <section class="strip" aria-label="Selected task">
+    <div>
+      <div class="lbl">Selected task</div>
+      <div class="id mono">NB-1842</div>
+      <div class="title">Token forensics</div>
+    </div>
+    <div>
+      <div class="lbl">Owner</div>
+      <div class="big">Mira</div>
+    </div>
+    <div>
+      <div class="lbl">Stage</div>
+      <div class="big tone-cyan">Working</div>
+    </div>
+    <div>
+      <div class="lbl">Progress</div>
+      <div class="big mono">72%</div>
+      <div class="barline"><i></i></div>
+    </div>
+    <div>
+      <div class="lbl">Latest action</div>
+      <div class="big" style="font-size:14px">Scan pass 4 of 5 · WL-19</div>
+    </div>
+    <div>
+      <div class="lbl">Next required</div>
+      <div class="big" style="font-size:14px">Handoff packet to Kai</div>
+    </div>
+  </section>
+</div>
+</body>
+</html>
