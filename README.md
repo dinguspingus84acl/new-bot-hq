@@ -1,6 +1,6 @@
 # New Bot HQ
 
-Animated neon office for Jack's paper-research bot — little runners walk the floor, original critter mascots hop beside them, and a roster below tracks each station from `status.json`.
+Dark cyber-noir command center for Jack's paper-research bot. Specialist agents stay at their desks with original critter mascots. Live assignments, handoffs, approvals, and blockers come from `status.json`.
 
 ## Live URL
 
@@ -22,6 +22,6 @@ Optional: commit a `CNAME` file containing only your domain name.
 
 ## Updating desks
 
-The bot updates `status.json` when work progresses. Refresh the page (it auto-polls every 3s).
+The bot updates `status.json` when work progresses. The floor auto-polls every 3s and only animates when a task is assigned, handed off, blocked, approved, completed, or failed.
 
 PAPER RESEARCH ONLY — no trading.
