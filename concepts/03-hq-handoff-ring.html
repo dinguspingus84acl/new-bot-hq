@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Concept 03 — HQ Handoff Ring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Sora:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg: #05060d;
+  --ink: #eef3ff;
+  --muted: #8ea0c4;
+  --cyan: #67e8f9;
+  --violet: #a78bfa;
+  --green: #4ade80;
+  --amber: #fbbf24;
+  --rose: #fda4af;
+  --line: rgba(148,163,184,.2);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); }
+body {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  background:
+    radial-gradient(circle at 50% 52%, #152038 0 90px, transparent 280px),
+    radial-gradient(900px 500px at 50% 110%, #1e1b4b33, transparent 50%),
+    var(--bg);
+}
+h1 { font-family: Sora, system-ui, sans-serif; }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+.page { width: 100vw; height: 100vh; position: relative; }
+.header {
+  position: absolute; top: 22px; left: 36px; right: 36px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  z-index: 4;
+}
+.kicker { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--cyan); font-weight: 600; }
+h1 { margin: 6px 0 0; font-size: 46px; letter-spacing: -.03em; }
+.sub { color: var(--muted); max-width: 520px; margin-top: 6px; font-size: 14px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 12px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: .06em;
+  background: #14532d66; color: var(--green); border: 1px solid #22c55e55;
+}
+.badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px #4ade80; }
+.dial-wrap {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+}
+.dial {
+  width: 620px; height: 620px; position: relative;
+}
+.ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 1px solid rgba(103,232,249,.28);
+  box-shadow: inset 0 0 40px rgba(103,232,249,.08), 0 0 40px rgba(15,23,42,.8);
+}
+.ring.r2 { inset: 48px; border-color: rgba(167,139,250,.28); }
+.ring.r3 { inset: 110px; border-style: dashed; border-color: rgba(251,191,36,.25); }
+.ring.r4 { inset: 188px; border-width: 2px; border-color: rgba(253,164,175,.45); background: rgba(8,10,20,.55); }
+.hash {
+  position: absolute; left: 50%; top: 0; width: 2px; height: 14px;
+  background: rgba(103,232,249,.35); transform-origin: 50% 310px;
+}
+.core {
+  position: absolute; inset: 188px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center;
+}
+.core img.hero {
+  height: 150px; width: auto; object-fit: contain;
+  image-rendering: pixelated; mix-blend-mode: lighten;
+}
+.core img.pet {
+  height: 48px; width: 48px; object-fit: contain;
+  image-rendering: pixelated; mix-blend-mode: lighten;
+  margin-top: -8px;
+}
+.core .who { font-family: Sora, sans-serif; font-size: 18px; margin-top: 4px; }
+.core .job { color: var(--muted); font-size: 12px; }
+.pod {
+  position: absolute; width: 210px; text-align: center;
+  background: rgba(8,12,24,.78);
+  border: 1px solid var(--line);
+  padding: 8px 10px 10px;
+}
+.pod.hot { border-color: rgba(167,139,250,.75); box-shadow: 0 0 20px rgba(167,139,250,.25); }
+.pod img.face {
+  height: 88px; width: auto; object-fit: contain;
+  image-rendering: pixelated; mix-blend-mode: lighten;
+}
+.pod img.m {
+  height: 34px; width: 34px; object-fit: contain;
+  image-rendering: pixelated; mix-blend-mode: lighten;
+}
+.pod b { display: block; font-family: Sora, sans-serif; font-size: 15px; }
+.pod span { color: var(--muted); font-size: 11px; }
+.p1 { left: 50%; top: -28px; transform: translateX(-50%); }
+.p2 { right: -40px; top: 118px; }
+.p3 { right: -10px; bottom: 78px; }
+.p4 { left: -10px; bottom: 78px; }
+.p5 { left: -40px; top: 118px; }
+.arc {
+  position: absolute; inset: 70px; pointer-events: none;
+}
+.flowbar {
+  position: absolute; left: 36px; right: 36px; bottom: 28px;
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+  z-index: 4;
+}
+.step {
+  border: 1px solid var(--line); background: rgba(8,12,24,.7);
+  padding: 10px 12px;
+}
+.step .n { font-size: 10px; letter-spacing: .14em; color: var(--muted); }
+.step b { display: block; margin-top: 4px; font-size: 14px; }
+.step.hot { border-color: rgba(74,222,128,.55); }
+.step.hot b { color: var(--green); }
+.step.next { border-color: rgba(167,139,250,.5); }
+.step.next b { color: var(--violet); }
+.callout {
+  position: absolute; right: 40px; top: 46%;
+  width: 240px;
+  border: 1px solid rgba(167,139,250,.5);
+  background: rgba(12,8,28,.82);
+  padding: 14px 16px;
+  z-index: 5;
+}
+.callout .k { font-size: 10px; letter-spacing: .16em; color: var(--violet); }
+.callout h2 { font-family: Sora, sans-serif; font-size: 18px; margin: 6px 0 8px; }
+.callout p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="header">
+    <div>
+      <div class="kicker mono">Concept 03 / 05 · grokbottech.com</div>
+      <h1>HQ Handoff Ring</h1>
+      <p class="sub">Central New Bot command dial. Five fixed agent portraits at their station pods. One highlighted path: Mira → Kai.</p>
+    </div>
+    <div class="badge">PAPER RESEARCH ONLY</div>
+  </header>
+
+  <div class="dial-wrap">
+    <div class="dial">
+      <div class="ring"></div>
+      <div class="ring r2"></div>
+      <div class="ring r3"></div>
+      <div class="ring r4"></div>
+      <span class="hash" style="transform:rotate(0deg) translateX(-1px)"></span>
+      <span class="hash" style="transform:rotate(30deg)"></span>
+      <span class="hash" style="transform:rotate(60deg)"></span>
+      <span class="hash" style="transform:rotate(90deg)"></span>
+      <span class="hash" style="transform:rotate(120deg)"></span>
+      <span class="hash" style="transform:rotate(150deg)"></span>
+      <span class="hash" style="transform:rotate(180deg)"></span>
+      <span class="hash" style="transform:rotate(210deg)"></span>
+      <span class="hash" style="transform:rotate(240deg)"></span>
+      <span class="hash" style="transform:rotate(270deg)"></span>
+      <span class="hash" style="transform:rotate(300deg)"></span>
+      <span class="hash" style="transform:rotate(330deg)"></span>
+
+      <svg class="arc" viewBox="0 0 480 480" aria-hidden="true">
+        <path d="M 86 210 C 90 320, 200 390, 330 330" fill="none" stroke="#a78bfa" stroke-width="3" stroke-dasharray="6 4" />
+        <polygon points="328,322 338,338 318,336" fill="#a78bfa" />
+        <text x="168" y="328" fill="#a78bfa" font-size="12" font-family="IBM Plex Mono, monospace" letter-spacing="1.5">MIRA → KAI</text>
+      </svg>
+
+      <div class="core">
+        <img class="hero" src="../assets/runner-coord.png" alt="New Bot command" />
+        <img class="pet" src="../assets/bunbot.png" alt="Bunbot" />
+        <div class="who">New Bot</div>
+        <div class="job">Command dial · floor lead</div>
+      </div>
+
+      <div class="pod p1">
+        <img class="face" src="../assets/runner-watch.png" alt="Oak" />
+        <img class="m" src="../assets/voltbug.png" alt="Voltbug" />
+        <b>Oak</b><span>Watch / monitoring · Voltbug</span>
+      </div>
+      <div class="pod p2 hot">
+        <img class="face" src="../assets/runner-cluster.png" alt="Kai" style="transform:scaleX(-1)" />
+        <img class="m" src="../assets/foldfox.png" alt="Foldfox" />
+        <b>Kai</b><span>Cluster / analysis · Foldfox</span>
+      </div>
+      <div class="pod p3">
+        <img class="face" src="../assets/runner-lab.png" alt="Rex" />
+        <img class="m" src="../assets/archivowl.png" alt="Archivowl" />
+        <b>Rex</b><span>Lab / archive · Archivowl</span>
+      </div>
+      <div class="pod p4">
+        <img class="face" src="../assets/runner-coord.png" alt="New Bot" />
+        <img class="m" src="../assets/bunbot.png" alt="Bunbot" />
+        <b>New Bot</b><span>Coord station · Bunbot</span>
+      </div>
+      <div class="pod p5 hot">
+        <img class="face" src="../assets/runner-deep.png" alt="Mira" />
+        <img class="m" src="../assets/scanslime.png" alt="Scanslime" />
+        <b>Mira</b><span>Forensics · Scanslime</span>
+      </div>
+    </div>
+  </div>
+
+  <aside class="callout">
+    <div class="k mono">STATIC HANDOFF</div>
+    <h2>Forensics packet → cluster</h2>
+    <p>Mira’s pod is locked. Arrow marks the only task route on this board: into Kai’s review station. Nobody walks.</p>
+  </aside>
+
+  <nav class="flowbar" aria-label="Workflow">
+    <div class="step"><div class="n mono">01</div><b>Inbox</b></div>
+    <div class="step"><div class="n mono">02</div><b>Assigned</b></div>
+    <div class="step hot"><div class="n mono">03</div><b>Working</b></div>
+    <div class="step next"><div class="n mono">04</div><b>Review</b></div>
+    <div class="step"><div class="n mono">05</div><b>Approval</b></div>
+    <div class="step"><div class="n mono">06</div><b>Done</b></div>
+  </nav>
+</div>
+</body>
+</html>

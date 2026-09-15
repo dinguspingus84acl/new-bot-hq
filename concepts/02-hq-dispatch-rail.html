@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Concept 02 — HQ Dispatch Rail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Sora:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg: #06070e;
+  --ink: #eef3ff;
+  --muted: #8ea0c4;
+  --cyan: #67e8f9;
+  --violet: #a78bfa;
+  --green: #4ade80;
+  --amber: #fbbf24;
+  --rose: #fda4af;
+  --line: rgba(148,163,184,.2);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); }
+body {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  background:
+    radial-gradient(1200px 280px at 50% 42%, #0e1a2e66, transparent 60%),
+    repeating-linear-gradient(90deg, rgba(103,232,249,.03) 0 1px, transparent 1px 80px),
+    repeating-linear-gradient(0deg, rgba(167,139,250,.03) 0 1px, transparent 1px 80px),
+    var(--bg);
+}
+h1, .name { font-family: Sora, system-ui, sans-serif; }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+.page {
+  width: 100vw; height: 100vh;
+  display: grid;
+  grid-template-rows: 132px 1fr 210px;
+  padding: 22px 36px 20px;
+}
+.top {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+.kicker { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--cyan); font-weight: 600; }
+h1 { margin: 6px 0 4px; font-size: 48px; letter-spacing: -.03em; }
+.sub { color: var(--muted); font-size: 14px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 12px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: .06em;
+  background: #14532d66; color: var(--green); border: 1px solid #22c55e55;
+  height: fit-content;
+}
+.badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px #4ade80; }
+.map { position: relative; }
+.rail {
+  position: absolute; left: 4%; right: 4%; top: 58%;
+  height: 10px;
+  background: linear-gradient(90deg, #67e8f9, #a78bfa 40%, #fbbf24 75%, #4ade80);
+  border-radius: 99px;
+  box-shadow: 0 0 24px rgba(103,232,249,.35);
+}
+.rail::before, .rail::after {
+  content: ""; position: absolute; top: 18px; left: 0; right: 0; height: 2px;
+  background: repeating-linear-gradient(90deg, rgba(148,163,184,.35) 0 12px, transparent 12px 22px);
+}
+.rail::after { top: -10px; }
+.siding {
+  position: absolute;
+  left: 36%; width: 28%;
+  top: 38%;
+  height: 8px;
+  background: var(--violet);
+  border-radius: 99px;
+  box-shadow: 0 0 16px rgba(167,139,250,.7);
+  transform: rotate(-7deg);
+}
+.siding span {
+  position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+  font-size: 11px; letter-spacing: .16em; color: var(--violet); white-space: nowrap;
+}
+.stops {
+  position: absolute; inset: 0;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  padding: 0 2%;
+}
+.stop { position: relative; }
+.platform {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  width: 168px;
+  text-align: center;
+}
+.platform.above { bottom: 58%; }
+.platform.below { top: 64%; }
+.node {
+  position: absolute; left: 50%; top: 58%;
+  transform: translate(-50%, -50%);
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #0b1020; border: 3px solid var(--cyan);
+  z-index: 2;
+}
+.stop:nth-child(2) .node { border-color: var(--violet); }
+.stop:nth-child(3) .node { border-color: var(--green); box-shadow: 0 0 14px #4ade80; }
+.stop:nth-child(4) .node { border-color: var(--amber); }
+.stop:nth-child(5) .node { border-color: var(--rose); }
+.stop:nth-child(6) .node { border-color: #86efac; }
+.st-name {
+  font-size: 13px; letter-spacing: .12em; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.stop:nth-child(1) .st-name { color: var(--cyan); }
+.stop:nth-child(2) .st-name { color: var(--violet); }
+.stop:nth-child(3) .st-name { color: var(--green); }
+.stop:nth-child(4) .st-name { color: var(--amber); }
+.stop:nth-child(5) .st-name { color: var(--rose); }
+.stop:nth-child(6) .st-name { color: #86efac; }
+.booth {
+  background: rgba(10,16,32,.72);
+  border: 1px solid var(--line);
+  padding: 8px 8px 6px;
+  min-height: 168px;
+}
+.booth.hot { border-color: rgba(167,139,250,.7); box-shadow: 0 0 18px rgba(167,139,250,.2); }
+.agent {
+  height: 92px; width: auto; max-width: 78px;
+  object-fit: contain; object-position: bottom;
+  image-rendering: pixelated; mix-blend-mode: lighten;
+}
+.mascot {
+  height: 36px; width: 36px; object-fit: contain;
+  image-rendering: pixelated; mix-blend-mode: lighten;
+  vertical-align: bottom;
+}
+.name { display: block; font-size: 14px; margin-top: 2px; }
+.role { display: block; color: var(--muted); font-size: 11px; }
+.tickets {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+  align-items: stretch;
+}
+.ticket {
+  border: 1px solid var(--line);
+  background: rgba(8,12,24,.7);
+  padding: 10px 12px;
+  min-height: 168px;
+}
+.ticket .tid { font-size: 10px; letter-spacing: .14em; color: var(--muted); }
+.ticket h3 { margin: 6px 0 8px; font-size: 15px; font-family: Sora, sans-serif; }
+.px-row { display: flex; gap: 3px; margin: 8px 0; flex-wrap: wrap; }
+.px {
+  width: 8px; height: 8px; background: #334155;
+}
+.ticket.inbox .px:nth-child(-n+2) { background: var(--cyan); }
+.ticket.assigned .px { background: var(--violet); }
+.ticket.working {
+  border-color: rgba(74,222,128,.5);
+  box-shadow: 0 0 16px rgba(74,222,128,.12);
+}
+.ticket.working .px { background: var(--green); }
+.ticket.review {
+  border-color: rgba(167,139,250,.55);
+}
+.ticket.review .px { background: var(--violet); }
+.ticket.approval .px:nth-child(-n+4) { background: var(--rose); }
+.ticket.done .px { background: #86efac; }
+.meta { font-size: 11px; color: var(--muted); line-height: 1.4; }
+.arrow {
+  position: absolute; left: 42%; top: 42%; z-index: 3;
+  color: var(--violet); font-size: 12px; letter-spacing: .12em;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <div>
+      <div class="kicker mono">Concept 02 / 05 · grokbottech.com</div>
+      <h1>HQ Dispatch Rail</h1>
+      <div class="sub">Futuristic transit diagram. Six workflow stations. Pixel task tickets ride the rail. Agents stay on their platforms.</div>
+    </div>
+    <div class="badge">PAPER RESEARCH ONLY</div>
+  </header>
+
+  <section class="map" aria-label="Dispatch rail">
+    <div class="rail"></div>
+    <div class="siding"><span class="mono">HANDOFF TRACK · MIRA → KAI</span></div>
+    <div class="stops">
+      <div class="stop">
+        <div class="node"></div>
+        <div class="platform above">
+          <div class="st-name mono">Inbox</div>
+          <div class="booth">
+            <img class="agent" src="../assets/runner-watch.png" alt="Oak" />
+            <img class="mascot" src="../assets/voltbug.png" alt="Voltbug" />
+            <span class="name">Oak</span>
+            <span class="role">Watch / monitoring</span>
+          </div>
+        </div>
+      </div>
+      <div class="stop">
+        <div class="node"></div>
+        <div class="platform below">
+          <div class="st-name mono">Assigned</div>
+          <div class="booth">
+            <img class="agent" src="../assets/runner-coord.png" alt="New Bot" />
+            <img class="mascot" src="../assets/bunbot.png" alt="Bunbot" />
+            <span class="name">New Bot</span>
+            <span class="role">Floor lead · coord</span>
+          </div>
+        </div>
+      </div>
+      <div class="stop">
+        <div class="node"></div>
+        <div class="platform above">
+          <div class="st-name mono">Working</div>
+          <div class="booth hot">
+            <img class="agent" src="../assets/runner-deep.png" alt="Mira" />
+            <img class="mascot" src="../assets/scanslime.png" alt="Scanslime" />
+            <span class="name">Mira</span>
+            <span class="role">Forensics · deep</span>
+          </div>
+        </div>
+      </div>
+      <div class="stop">
+        <div class="node"></div>
+        <div class="platform below">
+          <div class="st-name mono">Review</div>
+          <div class="booth hot">
+            <img class="agent" src="../assets/runner-cluster.png" alt="Kai" style="transform:scaleX(-1)" />
+            <img class="mascot" src="../assets/foldfox.png" alt="Foldfox" />
+            <span class="name">Kai</span>
+            <span class="role">Cluster / analysis</span>
+          </div>
+        </div>
+      </div>
+      <div class="stop">
+        <div class="node"></div>
+        <div class="platform above">
+          <div class="st-name mono">Approval</div>
+          <div class="booth">
+            <img class="agent" src="../assets/runner-lab.png" alt="Rex" />
+            <img class="mascot" src="../assets/archivowl.png" alt="Archivowl" />
+            <span class="name">Rex</span>
+            <span class="role">Lab / archive</span>
+          </div>
+        </div>
+      </div>
+      <div class="stop">
+        <div class="node"></div>
+        <div class="platform below">
+          <div class="st-name mono">Done</div>
+          <div class="booth" style="opacity:.7">
+            <div class="role" style="padding:48px 8px">Ledger parked<br>awaiting Jack</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tickets" aria-label="Pixel task tickets">
+    <article class="ticket inbox">
+      <div class="tid mono">TICKET · WL-IN</div>
+      <h3>Watchlist intake</h3>
+      <div class="px-row"><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i></div>
+      <div class="meta">Oak screens incoming paper alerts. No live movement — ticket sits at Inbox.</div>
+    </article>
+    <article class="ticket assigned">
+      <div class="tid mono">TICKET · AS-01</div>
+      <h3>Desk assignment</h3>
+      <div class="px-row"><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i></div>
+      <div class="meta">New Bot stamps owner + mascot. Bunbot holds the clipboard.</div>
+    </article>
+    <article class="ticket working">
+      <div class="tid mono">TICKET · PKT-05</div>
+      <h3>Forensics packet</h3>
+      <div class="px-row"><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i></div>
+      <div class="meta">Mira + Scanslime. Highlighted car about to transfer on the violet siding.</div>
+    </article>
+    <article class="ticket review">
+      <div class="tid mono">TICKET · CLUS-12</div>
+      <h3>Cluster review</h3>
+      <div class="px-row"><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i></div>
+      <div class="meta">Kai + Foldfox receive PKT-05. One static handoff path only.</div>
+    </article>
+    <article class="ticket approval">
+      <div class="tid mono">TICKET · AP-00</div>
+      <h3>Jack approval</h3>
+      <div class="px-row"><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i></div>
+      <div class="meta">Rex holds the paper ledger until Jack signs. No trades.</div>
+    </article>
+    <article class="ticket done">
+      <div class="tid mono">TICKET · DN-00</div>
+      <h3>Archive / done</h3>
+      <div class="px-row"><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i><i class="px"></i></div>
+      <div class="meta">Workflow terminus. Inbox → Assigned → Working → Review → Approval → Done.</div>
+    </article>
+  </section>
+</div>
+</body>
+</html>

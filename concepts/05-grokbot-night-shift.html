@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Concept 05 — GrokBot Night Shift</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Sora:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg: #04050a;
+  --ink: #eef3ff;
+  --muted: #8ea0c4;
+  --cyan: #67e8f9;
+  --violet: #a78bfa;
+  --green: #4ade80;
+  --amber: #fbbf24;
+  --rose: #fda4af;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); }
+body {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  background:
+    linear-gradient(180deg, #070814 0%, #0a1020 42%, #05070e 58%, #0b1220 100%),
+    var(--bg);
+}
+h1 { font-family: Sora, system-ui, sans-serif; }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+.page { width: 100vw; height: 100vh; position: relative; }
+.sky {
+  position: absolute; inset: 0 0 38% 0;
+  background:
+    radial-gradient(circle at 78% 18%, rgba(167,139,250,.18), transparent 22%),
+    radial-gradient(circle at 12% 28%, rgba(103,232,249,.08), transparent 18%);
+}
+.star { position: absolute; width: 2px; height: 2px; background: #e2e8f0; opacity: .5; }
+.title {
+  position: absolute; top: 22px; left: 36px; z-index: 6;
+}
+.kicker { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--cyan); font-weight: 600; }
+h1 { margin: 6px 0 0; font-size: 46px; letter-spacing: -.03em; text-shadow: 0 8px 24px #000; }
+.sub { color: var(--muted); max-width: 480px; margin-top: 6px; font-size: 14px; }
+.badge {
+  position: absolute; top: 28px; right: 36px; z-index: 6;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 12px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: .06em;
+  background: #14532d99; color: var(--green); border: 1px solid #22c55e55;
+}
+.badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px #4ade80; }
+.block {
+  position: absolute; left: 12%; right: 12%; top: 18%; height: 62%;
+  display: grid;
+  grid-template-columns: 90px 1fr 70px;
+  filter: drop-shadow(0 30px 40px rgba(0,0,0,.55));
+}
+.wing {
+  background: #0b0e16;
+  border: 1px solid #1e293b;
+}
+.facade {
+  display: grid;
+  grid-template-rows: 48px 1fr 1fr 1fr;
+  background: linear-gradient(180deg, #121826, #0b101c);
+  border: 1px solid rgba(103,232,249,.2);
+  position: relative;
+}
+.cornice {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 14px;
+  background: #0a1220;
+  border-bottom: 1px solid rgba(103,232,249,.25);
+  color: var(--cyan); font-size: 11px; letter-spacing: .14em;
+}
+.neon {
+  color: var(--cyan);
+  text-shadow: 0 0 10px #67e8f9;
+  font-weight: 700;
+}
+.row {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 10px; padding: 10px 12px;
+  border-bottom: 1px solid rgba(30,41,59,.9);
+}
+.window {
+  position: relative;
+  background: #06080f;
+  border: 2px solid #1e293b;
+  overflow: hidden;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.window.lit {
+  background: radial-gradient(ellipse at 50% 80%, #1e293b, #0b1220 70%);
+  box-shadow: inset 0 0 18px rgba(103,232,249,.12), 0 0 16px rgba(103,232,249,.12);
+}
+.window.mira { box-shadow: inset 0 0 22px rgba(125,211,252,.25), 0 0 18px rgba(125,211,252,.2); }
+.window.kai { box-shadow: inset 0 0 22px rgba(167,139,250,.28), 0 0 18px rgba(167,139,250,.22); }
+.window.oak { box-shadow: inset 0 0 18px rgba(74,222,128,.2); }
+.window.rex { box-shadow: inset 0 0 18px rgba(251,191,36,.22); }
+.window.coord { box-shadow: inset 0 0 18px rgba(253,164,175,.22); }
+.window img.agent {
+  height: 92%; max-height: 130px; width: auto;
+  object-fit: contain; object-position: bottom;
+  image-rendering: pixelated; mix-blend-mode: lighten;
+  z-index: 2;
+}
+.window img.m {
+  position: absolute; left: 6px; bottom: 6px;
+  height: 28px; width: 28px; object-fit: contain;
+  image-rendering: pixelated; mix-blend-mode: lighten; z-index: 3;
+}
+.deskbar {
+  position: absolute; left: 8%; right: 8%; bottom: 10%;
+  height: 10px; background: #334155; z-index: 1;
+}
+.wlabel {
+  position: absolute; top: 4px; left: 6px; right: 6px;
+  font-size: 9px; letter-spacing: .08em; text-transform: uppercase;
+  color: #cbd5e1; z-index: 4;
+  text-shadow: 0 1px 4px #000;
+}
+.dark { opacity: .35; }
+.street {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 22%;
+  background:
+    linear-gradient(180deg, transparent, rgba(15,23,42,.4) 12%, #070a12 40%),
+    repeating-linear-gradient(90deg, #111827 0 48px, #0f172a 48px 52px);
+}
+.puddle {
+  position: absolute; left: 22%; right: 22%; bottom: 8%; height: 28px;
+  background: linear-gradient(90deg, transparent, rgba(103,232,249,.12), rgba(167,139,250,.12), transparent);
+  filter: blur(1px);
+}
+.sign {
+  position: absolute; left: 16%; bottom: 18%;
+  padding: 6px 10px;
+  background: #14532dcc; color: var(--green);
+  border: 1px solid #22c55e66;
+  font-size: 11px; letter-spacing: .08em; z-index: 5;
+}
+.flow {
+  position: absolute; left: 12%; right: 12%; bottom: 6%;
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
+  z-index: 5;
+}
+.flow div {
+  text-align: center;
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  padding: 6px 4px;
+  background: rgba(8,12,24,.82);
+  border: 1px solid rgba(148,163,184,.2);
+}
+.flow .hot { color: var(--green); border-color: #4ade80; }
+.flow .next { color: var(--violet); border-color: var(--violet); }
+.cable {
+  position: absolute; left: 40%; right: 40%; top: 54%;
+  height: 3px; background: var(--violet);
+  box-shadow: 0 0 10px #a78bfa;
+  z-index: 5;
+}
+.cable span {
+  position: absolute; left: 50%; top: -16px; transform: translateX(-50%);
+  font-size: 10px; letter-spacing: .14em; color: var(--violet); white-space: nowrap;
+  background: #05070e; padding: 0 6px;
+}
+.antenna {
+  position: absolute; top: 12%; right: 18%; width: 4px; height: 48px;
+  background: #67e8f9; box-shadow: 0 0 10px #67e8f9; z-index: 2;
+}
+.antenna::after {
+  content: ""; position: absolute; top: -8px; left: -10px;
+  width: 24px; height: 8px; border: 2px solid #67e8f9; border-radius: 50%;
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="sky">
+    <span class="star" style="left:12%;top:18%"></span>
+    <span class="star" style="left:22%;top:8%"></span>
+    <span class="star" style="left:48%;top:14%"></span>
+    <span class="star" style="left:63%;top:6%"></span>
+    <span class="star" style="left:81%;top:20%"></span>
+    <span class="star" style="left:91%;top:11%"></span>
+  </div>
+  <div class="antenna"></div>
+
+  <header class="title">
+    <div class="kicker mono">Concept 05 / 05 · grokbottech.com</div>
+    <h1>GrokBot Night Shift</h1>
+    <p class="sub">Nighttime service block. Agents stay behind illuminated windows. Workflow reads as a street-level strip. One window-to-window handoff: Mira → Kai.</p>
+  </header>
+  <div class="badge">PAPER RESEARCH ONLY</div>
+
+  <div class="block">
+    <div class="wing"></div>
+    <div class="facade">
+      <div class="cornice">
+        <span class="neon mono">GROKBOT HQ</span>
+        <span class="mono">NIGHT SHIFT · PAPER DESK</span>
+      </div>
+      <div class="row">
+        <div class="window dark"></div>
+        <div class="window lit oak">
+          <div class="wlabel mono">Oak · watch</div>
+          <div class="deskbar"></div>
+          <img class="m" src="../assets/voltbug.png" alt="Voltbug" />
+          <img class="agent" src="../assets/runner-watch.png" alt="Oak" />
+        </div>
+        <div class="window dark"></div>
+        <div class="window lit coord">
+          <div class="wlabel mono">New Bot · coord</div>
+          <div class="deskbar"></div>
+          <img class="m" src="../assets/bunbot.png" alt="Bunbot" />
+          <img class="agent" src="../assets/runner-coord.png" alt="New Bot" />
+        </div>
+        <div class="window dark"></div>
+      </div>
+      <div class="row">
+        <div class="window dark"></div>
+        <div class="window lit mira">
+          <div class="wlabel mono">Mira · forensics</div>
+          <div class="deskbar"></div>
+          <img class="m" src="../assets/scanslime.png" alt="Scanslime" />
+          <img class="agent" src="../assets/runner-deep.png" alt="Mira" />
+        </div>
+        <div class="window dark"></div>
+        <div class="window lit kai">
+          <div class="wlabel mono">Kai · cluster</div>
+          <div class="deskbar"></div>
+          <img class="m" src="../assets/foldfox.png" alt="Foldfox" />
+          <img class="agent" src="../assets/runner-cluster.png" alt="Kai" style="transform:scaleX(-1)" />
+        </div>
+        <div class="window dark"></div>
+      </div>
+      <div class="row">
+        <div class="window dark"></div>
+        <div class="window dark"></div>
+        <div class="window lit rex">
+          <div class="wlabel mono">Rex · archive</div>
+          <div class="deskbar"></div>
+          <img class="m" src="../assets/archivowl.png" alt="Archivowl" />
+          <img class="agent" src="../assets/runner-lab.png" alt="Rex" />
+        </div>
+        <div class="window dark"></div>
+        <div class="window dark"></div>
+      </div>
+    </div>
+    <div class="wing"></div>
+  </div>
+
+  <div class="cable"><span class="mono">HANDOFF · MIRA → KAI</span></div>
+  <div class="sign mono">PAPER RESEARCH ONLY</div>
+  <div class="street"><div class="puddle"></div></div>
+
+  <nav class="flow" aria-label="Workflow">
+    <div>Inbox</div>
+    <div>Assigned</div>
+    <div class="hot">Working</div>
+    <div class="next">Review</div>
+    <div>Approval</div>
+    <div>Done</div>
+  </nav>
+</div>
+</body>
+</html>

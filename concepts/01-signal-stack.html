@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Concept 01 — Signal Stack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Sora:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg: #05060c;
+  --ink: #eef3ff;
+  --muted: #8ea0c4;
+  --cyan: #67e8f9;
+  --violet: #a78bfa;
+  --green: #4ade80;
+  --amber: #fbbf24;
+  --rose: #fda4af;
+  --line: rgba(148,163,184,.22);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); }
+body {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  background:
+    radial-gradient(900px 420px at 50% -8%, #1e1b4b44, transparent 55%),
+    radial-gradient(700px 380px at 80% 110%, #14532d22, transparent 50%),
+    repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,.18) 4px),
+    var(--bg);
+}
+h1, h2, .brand { font-family: Sora, system-ui, sans-serif; }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+.board {
+  width: 100vw; height: 100vh;
+  display: grid;
+  grid-template-columns: 340px 1fr 320px;
+  gap: 0;
+  position: relative;
+}
+.side {
+  padding: 28px 26px;
+  border-right: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(8,12,24,.72), rgba(8,12,24,.35));
+  display: flex; flex-direction: column; gap: 18px;
+}
+.side.right {
+  border-right: 0;
+  border-left: 1px solid var(--line);
+}
+.kicker {
+  font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--cyan); font-weight: 600;
+}
+h1 {
+  margin: 0;
+  font-size: 42px;
+  letter-spacing: -.03em;
+  line-height: .95;
+}
+.sub { color: var(--muted); font-size: 14px; line-height: 1.45; }
+.badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  width: max-content;
+  padding: 5px 11px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: .06em;
+  background: #14532d66; color: var(--green);
+  border: 1px solid #22c55e55;
+}
+.badge::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 8px #4ade80;
+}
+.flow-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.flow-list li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 0;
+  font-size: 13px;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(148,163,184,.1);
+}
+.flow-list li b { color: var(--ink); font-weight: 600; width: 92px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot.inbox { background: var(--cyan); }
+.dot.assigned { background: var(--violet); }
+.dot.working { background: var(--green); box-shadow: 0 0 10px #4ade80; }
+.dot.review { background: var(--amber); }
+.dot.approval { background: var(--rose); }
+.dot.done { background: #86efac; }
+.flow-list li.hot { color: var(--ink); }
+.flow-list li.hot b { color: var(--green); }
+.note {
+  margin-top: auto;
+  font-size: 12px; color: var(--muted); line-height: 1.45;
+  border: 1px solid var(--line); padding: 12px 14px;
+  background: rgba(10,16,32,.55);
+}
+.note strong { color: var(--violet); }
+.stage {
+  position: relative;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 36px 20px 28px;
+}
+.tower {
+  width: min(560px, 100%);
+  height: 100%;
+  display: grid;
+  grid-template-rows: 54px 1fr 1fr 1fr 28px;
+  position: relative;
+  filter: drop-shadow(0 30px 50px rgba(0,0,0,.55));
+}
+.roof {
+  background: linear-gradient(180deg, #1a2038, #0d1224);
+  clip-path: polygon(8% 100%, 18% 18%, 82% 18%, 92% 100%);
+  border: 1px solid rgba(103,232,249,.25);
+  position: relative;
+}
+.roof .dish {
+  position: absolute; left: 50%; top: 4px; transform: translateX(-50%);
+  width: 10px; height: 22px; background: #67e8f9;
+  box-shadow: 0 0 12px #67e8f9;
+}
+.roof .dish::after {
+  content: ""; position: absolute; top: -6px; left: -8px;
+  width: 26px; height: 8px; border: 2px solid #67e8f9; border-radius: 50%;
+}
+.floor {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 86px 1fr;
+  background: linear-gradient(180deg, #101628, #0a0e1a);
+  border: 1px solid rgba(148,163,184,.2);
+  border-top: 0;
+  overflow: hidden;
+}
+.floor.l3 { background: linear-gradient(180deg, #161b32, #0c1020); }
+.floor.l2 { background: linear-gradient(180deg, #12182c, #0b1222); box-shadow: inset 0 0 40px rgba(167,139,250,.12); }
+.floor.l1 { background: linear-gradient(180deg, #101624, #090c16); }
+.slab {
+  height: 10px; background: #0b0e18;
+  border: 1px solid rgba(148,163,184,.15);
+  box-shadow: 0 -8px 24px rgba(103,232,249,.12);
+}
+.level-tag {
+  position: absolute; top: 10px; left: 12px;
+  font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted);
+}
+.shaft {
+  position: relative;
+  background:
+    linear-gradient(90deg, transparent, rgba(103,232,249,.12), transparent),
+    repeating-linear-gradient(180deg, rgba(103,232,249,.08) 0 8px, transparent 8px 18px),
+    #041018;
+  border-left: 1px solid rgba(103,232,249,.45);
+  border-right: 1px solid rgba(103,232,249,.45);
+  box-shadow: inset 0 0 18px rgba(103,232,249,.25), 0 0 28px rgba(103,232,249,.18);
+}
+.shaft-label {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%) rotate(-90deg);
+  white-space: nowrap;
+  font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--cyan); font-weight: 600;
+}
+.shaft .node {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  width: 54px; text-align: center;
+  font-size: 8px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted);
+}
+.shaft .node i {
+  display: block; width: 10px; height: 10px; margin: 0 auto 3px;
+  border-radius: 2px; background: #334155;
+}
+.shaft .node.hot { color: var(--green); }
+.shaft .node.hot i { background: var(--green); box-shadow: 0 0 10px #4ade80; }
+.shaft .node.review i { background: var(--amber); }
+.l3 .shaft .node { top: 18px; }
+.l3 .shaft .node + .node { top: auto; bottom: 16px; }
+.l2 .shaft .node { top: 18px; }
+.l2 .shaft .node + .node { top: auto; bottom: 16px; }
+.l1 .shaft .node { top: 18px; }
+.l1 .shaft .node + .node { top: auto; bottom: 16px; }
+.bay {
+  position: relative;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 28px 8px 10px;
+}
+.desk {
+  position: absolute; bottom: 10px; width: 118px; height: 46px;
+  background: linear-gradient(180deg, #1e293b, #0f172a);
+  border: 1px solid rgba(148,163,184,.28);
+  border-radius: 3px 3px 0 0;
+}
+.monitor {
+  position: absolute; left: 18px; top: -22px; width: 82px; height: 28px;
+  background: #020617; border: 1px solid rgba(103,232,249,.35);
+  box-shadow: 0 0 12px rgba(34,211,238,.2);
+  color: var(--cyan); font-size: 8px; letter-spacing: .08em;
+  display: flex; align-items: center; justify-content: center;
+}
+.agent {
+  position: relative; z-index: 2;
+  height: 118px; width: 86px;
+  object-fit: contain; object-position: bottom;
+  image-rendering: pixelated;
+  mix-blend-mode: lighten;
+  margin-bottom: 28px;
+}
+.mascot {
+  position: absolute; z-index: 3;
+  width: 42px; height: 42px; bottom: 12px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  mix-blend-mode: lighten;
+}
+.bay.left .mascot { left: 8px; }
+.bay.right .mascot { right: 8px; }
+.bay.right .agent { transform: scaleX(-1); }
+.tag {
+  position: absolute; top: 28px; z-index: 4;
+  background: rgba(8,12,24,.82);
+  border: 1px solid var(--line);
+  padding: 4px 8px;
+  font-size: 11px; line-height: 1.25;
+}
+.bay.left .tag { left: 8px; }
+.bay.right .tag { right: 8px; text-align: right; }
+.tag b { display: block; font-family: Sora, sans-serif; font-size: 13px; }
+.tag span { color: var(--muted); font-size: 10px; }
+.tag i { display: block; font-style: normal; color: var(--cyan); font-size: 10px; }
+.handoff {
+  position: absolute; left: 18%; right: 18%; top: 44%;
+  height: 0; z-index: 5;
+  border-top: 2px solid var(--violet);
+  box-shadow: 0 0 10px rgba(167,139,250,.8);
+  pointer-events: none;
+}
+.handoff::before, .handoff::after {
+  content: ""; position: absolute; top: -5px; width: 10px; height: 10px;
+  border: 2px solid var(--violet); transform: rotate(45deg);
+  background: #0b1020;
+}
+.handoff::before { left: -2px; }
+.handoff::after { right: -2px; border-right: 0; border-bottom: 0; }
+.handoff em {
+  position: absolute; left: 50%; top: -18px; transform: translateX(-50%);
+  font-style: normal; font-size: 10px; letter-spacing: .12em;
+  color: var(--violet); background: #0b1020; padding: 0 6px;
+  white-space: nowrap;
+}
+.window-bit {
+  position: absolute; top: 12px; width: 16px; height: 22px;
+  background: rgba(103,232,249,.12);
+  border: 1px solid rgba(103,232,249,.2);
+}
+.l3 .window-bit { right: 10px; }
+.l1 .window-bit { left: 10px; background: rgba(251,191,36,.14); border-color: rgba(251,191,36,.3); }
+.ticket {
+  border: 1px solid rgba(167,139,250,.4);
+  background: rgba(15,10,32,.7);
+  padding: 14px;
+}
+.ticket .tid { color: var(--violet); font-size: 11px; letter-spacing: .14em; }
+.ticket h2 { margin: 6px 0 8px; font-size: 18px; }
+.ticket p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+.path {
+  margin-top: 16px; padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 12px; color: var(--muted);
+}
+.path b { color: #7dd3fc; }
+.path i { color: #c4b5fd; font-style: normal; }
+.roster { display: grid; gap: 8px; margin-top: 16px; }
+.roster div {
+  display: flex; justify-content: space-between;
+  font-size: 12px; color: var(--muted);
+  padding: 6px 0; border-bottom: 1px solid rgba(148,163,184,.1);
+}
+.roster b { color: var(--ink); }
+.footer-mark {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+  font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #64748b;
+}
+</style>
+</head>
+<body>
+<div class="board">
+  <aside class="side">
+    <div class="kicker mono">Concept 01 / 05 · grokbottech.com</div>
+    <h1>Signal<br>Stack</h1>
+    <div class="badge">PAPER RESEARCH ONLY</div>
+    <p class="sub">Narrow three-level cyber-noir cutaway. Tasks drop through an illuminated vertical shaft. Agents stay at their floor stations.</p>
+    <ol class="flow-list">
+      <li><span class="dot inbox"></span><b>Inbox</b> roof intake</li>
+      <li><span class="dot assigned"></span><b>Assigned</b> command deck</li>
+      <li class="hot"><span class="dot working"></span><b>Working</b> analysis floor</li>
+      <li><span class="dot review"></span><b>Review</b> analysis floor</li>
+      <li><span class="dot approval"></span><b>Approval</b> archive</li>
+      <li><span class="dot done"></span><b>Done</b> ledger vault</li>
+    </ol>
+    <div class="note">Static selection board. No live feed. One highlighted handoff: <strong>Mira → Kai</strong>.</div>
+  </aside>
+
+  <main class="stage">
+    <div class="tower" aria-label="HQ cutaway">
+      <div class="roof"><span class="dish"></span></div>
+
+      <section class="floor l3">
+        <span class="level-tag mono">L3 · Command</span>
+        <div class="bay left">
+          <div class="tag"><b>New Bot</b><span>Floor lead · coord</span><i>Bunbot</i></div>
+          <img class="agent" src="../assets/runner-coord.png" alt="New Bot" />
+          <img class="mascot" src="../assets/bunbot.png" alt="Bunbot" />
+          <div class="desk"><div class="monitor mono">DISPATCH</div></div>
+        </div>
+        <div class="shaft">
+          <div class="node mono"><i></i>Inbox</div>
+          <div class="node mono"><i></i>Assigned</div>
+        </div>
+        <div class="bay right">
+          <div class="tag"><b>Oak</b><span>Watch / monitoring</span><i>Voltbug</i></div>
+          <img class="agent" src="../assets/runner-watch.png" alt="Oak" />
+          <img class="mascot" src="../assets/voltbug.png" alt="Voltbug" />
+          <div class="desk"><div class="monitor mono">WATCH</div></div>
+        </div>
+        <span class="window-bit"></span>
+      </section>
+
+      <section class="floor l2">
+        <span class="level-tag mono">L2 · Analysis</span>
+        <div class="handoff"><em class="mono">HANDOFF · MIRA → KAI</em></div>
+        <div class="bay left">
+          <div class="tag"><b>Mira</b><span>Forensics · deep</span><i>Scanslime</i></div>
+          <img class="agent" src="../assets/runner-deep.png" alt="Mira" />
+          <img class="mascot" src="../assets/scanslime.png" alt="Scanslime" />
+          <div class="desk"><div class="monitor mono">FORENSICS</div></div>
+        </div>
+        <div class="shaft">
+          <div class="node hot mono"><i></i>Working</div>
+          <div class="node review mono"><i></i>Review</div>
+        </div>
+        <div class="bay right">
+          <div class="tag"><b>Kai</b><span>Cluster / analysis</span><i>Foldfox</i></div>
+          <img class="agent" src="../assets/runner-cluster.png" alt="Kai" />
+          <img class="mascot" src="../assets/foldfox.png" alt="Foldfox" />
+          <div class="desk"><div class="monitor mono">CLUSTER</div></div>
+        </div>
+      </section>
+
+      <section class="floor l1">
+        <span class="level-tag mono">L1 · Archive</span>
+        <div class="bay left">
+          <div class="tag"><b>Rex</b><span>Lab / archive</span><i>Archivowl</i></div>
+          <img class="agent" src="../assets/runner-lab.png" alt="Rex" />
+          <img class="mascot" src="../assets/archivowl.png" alt="Archivowl" />
+          <div class="desk"><div class="monitor mono">LEDGER</div></div>
+        </div>
+        <div class="shaft">
+          <div class="node mono"><i></i>Approval</div>
+          <div class="node mono"><i></i>Done</div>
+        </div>
+        <div class="bay right">
+          <div class="desk" style="opacity:.45"><div class="monitor mono">VAULT</div></div>
+        </div>
+        <span class="window-bit"></span>
+      </section>
+      <div class="slab"></div>
+    </div>
+    <div class="footer-mark mono">New Bot HQ · cutaway · static</div>
+  </main>
+
+  <aside class="side right">
+    <div class="kicker mono">Active ticket</div>
+    <div class="ticket">
+      <div class="tid mono">PKT-05 · PAPER</div>
+      <h2>Watchlist forensics packet</h2>
+      <p>Mira finished token forensics. Packet sits on the analysis floor, queued across the shaft to Kai for cluster review.</p>
+      <div class="path mono">Inbox → Assigned → <b>Working</b> → <i>Review</i> → Approval → Done</div>
+    </div>
+    <div class="roster">
+      <div><b>New Bot</b><span>coord · Bunbot</span></div>
+      <div><b>Mira</b><span>deep · Scanslime</span></div>
+      <div><b>Kai</b><span>cluster · Foldfox</span></div>
+      <div><b>Oak</b><span>watch · Voltbug</span></div>
+      <div><b>Rex</b><span>lab · Archivowl</span></div>
+    </div>
+    <div class="note">Selection mockup only. Does not drive live HQ.</div>
+  </aside>
+</div>
+</body>
+</html>

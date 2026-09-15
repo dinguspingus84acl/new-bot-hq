@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Concept 04 — Agent Constellation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Sora:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg: #04050b;
+  --ink: #eef3ff;
+  --muted: #8ea0c4;
+  --cyan: #67e8f9;
+  --violet: #a78bfa;
+  --green: #4ade80;
+  --amber: #fbbf24;
+  --rose: #fda4af;
+  --line: rgba(148,163,184,.18);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); }
+body {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 80%, #0b1f1833, transparent 40%),
+    radial-gradient(ellipse at 78% 18%, #1e1b4b44, transparent 42%),
+    repeating-linear-gradient(0deg, transparent 0 39px, rgba(103,232,249,.04) 40px),
+    repeating-linear-gradient(90deg, transparent 0 39px, rgba(103,232,249,.04) 40px),
+    var(--bg);
+}
+h1 { font-family: Sora, system-ui, sans-serif; }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+.page { width: 100vw; height: 100vh; position: relative; }
+.stamp {
+  position: absolute; top: 24px; left: 32px; z-index: 5; max-width: 460px;
+}
+.kicker { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--cyan); font-weight: 600; }
+h1 { margin: 6px 0 0; font-size: 44px; letter-spacing: -.03em; line-height: .95; }
+.sub { color: var(--muted); font-size: 14px; margin-top: 8px; }
+.badge {
+  position: absolute; top: 28px; right: 32px; z-index: 5;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 12px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: .06em;
+  background: #14532d66; color: var(--green); border: 1px solid #22c55e55;
+}
+.badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px #4ade80; }
+svg.net {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 1;
+}
+.station {
+  position: absolute; z-index: 3;
+  background: rgba(8,12,24,.78);
+  border: 1px solid var(--line);
+  padding: 10px 12px 8px;
+}
+.station.hot { border-color: rgba(167,139,250,.7); box-shadow: 0 0 22px rgba(167,139,250,.18); }
+.station.cmd {
+  border-color: rgba(253,164,175,.45);
+  width: 280px;
+}
+.toprow { display: flex; align-items: flex-end; gap: 8px; }
+img.agent {
+  height: 100px; width: auto; object-fit: contain; object-position: bottom;
+  image-rendering: pixelated; mix-blend-mode: lighten;
+}
+.cmd img.agent { height: 120px; }
+img.m {
+  height: 40px; width: 40px; object-fit: contain;
+  image-rendering: pixelated; mix-blend-mode: lighten;
+}
+.console {
+  width: 120px; height: 44px; margin-top: 6px;
+  background: linear-gradient(180deg, #1e293b, #0b1220);
+  border: 1px solid rgba(148,163,184,.25);
+  position: relative;
+}
+.console i {
+  position: absolute; left: 10px; top: -16px; width: 72px; height: 20px;
+  background: #020617; border: 1px solid rgba(103,232,249,.35);
+  color: var(--cyan); font-size: 8px; letter-spacing: .1em;
+  display: flex; align-items: center; justify-content: center;
+}
+.lbl b { display: block; font-family: Sora, sans-serif; font-size: 15px; }
+.lbl span { color: var(--muted); font-size: 11px; }
+.s-oak { top: 12%; left: 58%; width: 230px; }
+.s-mira { top: 46%; left: 8%; width: 240px; }
+.s-kai { top: 38%; left: 62%; width: 240px; }
+.s-rex { top: 68%; left: 28%; width: 240px; }
+.s-new { top: 28%; left: 30%; }
+.pipe {
+  position: absolute; right: 28px; top: 88px; bottom: 28px; width: 200px;
+  z-index: 4;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.pipe h2 {
+  font-family: Sora, sans-serif; font-size: 13px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 4px;
+}
+.pstep {
+  flex: 1; border: 1px solid var(--line); background: rgba(8,12,24,.72);
+  padding: 8px 10px; display: flex; flex-direction: column; justify-content: center;
+}
+.pstep .n { font-size: 10px; color: var(--muted); letter-spacing: .12em; }
+.pstep b { font-size: 14px; }
+.pstep.hot { border-color: #4ade80; background: rgba(20,83,45,.25); }
+.pstep.next { border-color: var(--violet); }
+.legend {
+  position: absolute; left: 32px; bottom: 24px; z-index: 4;
+  font-size: 12px; color: var(--muted);
+  border: 1px solid var(--line); padding: 10px 14px; background: rgba(8,12,24,.7);
+}
+.legend strong { color: var(--violet); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="stamp">
+    <div class="kicker mono">Concept 04 / 05 · grokbottech.com</div>
+    <h1>Agent<br>Constellation</h1>
+    <p class="sub">Asymmetric mission-control network. Fixed operator stations. Task routes drawn as a star map. Highlighted: Mira → Kai.</p>
+  </div>
+  <div class="badge">PAPER RESEARCH ONLY</div>
+
+  <svg class="net" viewBox="0 0 100 56" preserveAspectRatio="none" aria-hidden="true">
+    <line x1="42" y1="38" x2="68" y2="18" stroke="rgba(103,232,249,.18)" stroke-width=".15" />
+    <line x1="42" y1="38" x2="18" y2="52" stroke="rgba(103,232,249,.18)" stroke-width=".15" />
+    <line x1="42" y1="38" x2="40" y2="76" stroke="rgba(103,232,249,.18)" stroke-width=".15" />
+    <line x1="42" y1="38" x2="72" y2="46" stroke="rgba(103,232,249,.18)" stroke-width=".15" />
+    <line x1="18" y1="52" x2="72" y2="46" stroke="#a78bfa" stroke-width=".45" />
+    <polygon points="70,44.8 73.2,46.2 70.2,47.6" fill="#a78bfa" />
+    <text x="38" y="48" fill="#a78bfa" font-size="2.2" font-family="IBM Plex Mono, monospace">HANDOFF MIRA → KAI</text>
+    <circle cx="18" cy="52" r=".7" fill="#67e8f9" />
+    <circle cx="42" cy="38" r=".7" fill="#fda4af" />
+    <circle cx="68" cy="18" r=".7" fill="#86efac" />
+    <circle cx="72" cy="46" r=".7" fill="#a78bfa" />
+    <circle cx="40" cy="76" r=".7" fill="#fbbf24" />
+  </svg>
+
+  <article class="station cmd s-new">
+    <div class="toprow">
+      <img class="agent" src="../assets/runner-coord.png" alt="New Bot" />
+      <img class="m" src="../assets/bunbot.png" alt="Bunbot" />
+      <div class="lbl"><b>New Bot</b><span>Floor lead · coord well</span></div>
+    </div>
+    <div class="console"><i class="mono">COMMS</i></div>
+  </article>
+
+  <article class="station s-oak">
+    <div class="toprow">
+      <img class="agent" src="../assets/runner-watch.png" alt="Oak" />
+      <img class="m" src="../assets/voltbug.png" alt="Voltbug" />
+      <div class="lbl"><b>Oak</b><span>Watch perch · monitoring</span></div>
+    </div>
+    <div class="console"><i class="mono">RADAR</i></div>
+  </article>
+
+  <article class="station hot s-mira">
+    <div class="toprow">
+      <img class="agent" src="../assets/runner-deep.png" alt="Mira" />
+      <img class="m" src="../assets/scanslime.png" alt="Scanslime" />
+      <div class="lbl"><b>Mira</b><span>Forensics pit · deep</span></div>
+    </div>
+    <div class="console"><i class="mono">SCAN</i></div>
+  </article>
+
+  <article class="station hot s-kai">
+    <div class="toprow">
+      <img class="agent" src="../assets/runner-cluster.png" alt="Kai" style="transform:scaleX(-1)" />
+      <img class="m" src="../assets/foldfox.png" alt="Foldfox" />
+      <div class="lbl"><b>Kai</b><span>Cluster desk · analysis</span></div>
+    </div>
+    <div class="console"><i class="mono">GRAPH</i></div>
+  </article>
+
+  <article class="station s-rex">
+    <div class="toprow">
+      <img class="agent" src="../assets/runner-lab.png" alt="Rex" />
+      <img class="m" src="../assets/archivowl.png" alt="Archivowl" />
+      <div class="lbl"><b>Rex</b><span>Archive stacks · lab</span></div>
+    </div>
+    <div class="console"><i class="mono">LEDGER</i></div>
+  </article>
+
+  <aside class="pipe">
+    <h2>Task route</h2>
+    <div class="pstep"><div class="n mono">01 Inbox</div><b>Intake node</b></div>
+    <div class="pstep"><div class="n mono">02 Assigned</div><b>New Bot well</b></div>
+    <div class="pstep hot"><div class="n mono">03 Working</div><b>Mira pit</b></div>
+    <div class="pstep next"><div class="n mono">04 Review</div><b>Kai graph</b></div>
+    <div class="pstep"><div class="n mono">05 Approval</div><b>Rex stacks</b></div>
+    <div class="pstep"><div class="n mono">06 Done</div><b>Vault / Jack</b></div>
+  </aside>
+
+  <div class="legend">Stations are fixed. Faint cyan = org routes. <strong>Violet = the only active handoff.</strong> PAPER RESEARCH ONLY.</div>
+</div>
+</body>
+</html>
