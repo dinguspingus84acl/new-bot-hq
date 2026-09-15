@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mira station proof — one desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+  html, body {
+    margin: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: #05060c;
+    color: #d7e2f5;
+    font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  }
+  .view {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    position: relative;
+  }
+  .stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1280px;
+    height: 720px;
+    transform: scale(1.5);
+    transform-origin: 0 0;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  .layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1280px;
+    height: 720px;
+    pointer-events: none;
+    image-rendering: pixelated;
+  }
+  .floor {
+    width: 1280px;
+    height: 720px;
+    display: block;
+    image-rendering: pixelated;
+  }
+  .dim {
+    background:
+      radial-gradient(ellipse 210px 140px at 544px 188px, transparent 0 58%, rgba(4, 6, 14, 0.58) 78%, rgba(4, 6, 14, 0.72) 100%);
+  }
+  .sprite {
+    position: absolute;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    pointer-events: none;
+  }
+  .mira {
+    width: 56px;
+    height: 64px;
+    left: 514px;
+    top: 146px;
+    background-image: url("sprites/mira-sheet.png");
+    background-size: 616px 64px;
+    z-index: 4;
+  }
+  .slime {
+    width: 28px;
+    height: 26px;
+    left: 568px;
+    top: 138px;
+    background-image: url("sprites/scanslime-sheet.png");
+    background-size: 140px 26px;
+    z-index: 3;
+  }
+  .shadow {
+    left: 527px;
+    top: 205px;
+    width: 34px;
+    height: 10px;
+    background-image: url("sprites/contact-shadow.png");
+    background-size: 34px 10px;
+    z-index: 2;
+  }
+  .chair-mask {
+    z-index: 5;
+  }
+  .fx {
+    position: absolute;
+    pointer-events: none;
+    image-rendering: pixelated;
+    overflow: hidden;
+  }
+  .mon-mira {
+    left: 498px;
+    top: 108px;
+    width: 58px;
+    height: 34px;
+    z-index: 6;
+  }
+  .mon-kai {
+    left: 668px;
+    top: 106px;
+    width: 52px;
+    height: 34px;
+    z-index: 6;
+    opacity: 0;
+  }
+  .scanline {
+    position: absolute;
+    left: 6px;
+    width: 46px;
+    height: 2px;
+    background: rgba(103, 232, 249, 0.28);
+  }
+  .task-ping {
+    position: absolute;
+    left: 526px;
+    top: 128px;
+    width: 6px;
+    height: 6px;
+    background: #67e8f9;
+    box-shadow: 0 0 6px #22d3ee;
+    opacity: 0;
+    z-index: 6;
+    image-rendering: pixelated;
+  }
+  .packet {
+    position: absolute;
+    width: 22px;
+    height: 10px;
+    margin-left: -11px;
+    margin-top: -5px;
+    background: #0b1220;
+    border: 1px solid #67e8f9;
+    color: #e0f2fe;
+    font: 600 7px/8px "IBM Plex Mono", ui-monospace, monospace;
+    text-align: center;
+    letter-spacing: 0.02em;
+    opacity: 0;
+    z-index: 6;
+    image-rendering: pixelated;
+  }
+  .hud {
+    position: absolute;
+    left: 20px;
+    top: 18px;
+    width: 300px;
+    pointer-events: none;
+    z-index: 8;
+    text-shadow: 0 1px 3px #000;
+  }
+  .live {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: 600 11px/1 "IBM Plex Mono", ui-monospace, monospace;
+    letter-spacing: 0.14em;
+    color: #4ade80;
+  }
+  .live i {
+    width: 6px;
+    height: 6px;
+    background: #4ade80;
+    box-shadow: 0 0 8px #4ade80;
+    display: block;
+    flex: 0 0 6px;
+  }
+  .task {
+    margin: 8px 0 4px;
+    font: 600 14px/1.25 "IBM Plex Sans", sans-serif;
+    color: #eef3ff;
+  }
+  .state {
+    display: block;
+    font: 600 11px/1.2 "IBM Plex Mono", ui-monospace, monospace;
+    letter-spacing: 0.1em;
+    color: #67e8f9;
+    text-transform: uppercase;
+  }
+  .tape {
+    margin-top: 12px;
+    font: 500 11px/1.5 "IBM Plex Mono", ui-monospace, monospace;
+    color: #9aa8c7;
+  }
+  .tape div {
+    display: block;
+    min-height: 16px;
+    margin: 0 0 2px;
+  }
+  .prog-wrap {
+    margin-top: 10px;
+    width: 92px;
+    height: 3px;
+    background: #1e293b;
+  }
+  .prog {
+    height: 3px;
+    width: 0;
+    background: #67e8f9;
+  }
+  .hit {
+    position: absolute;
+    left: 470px;
+    top: 96px;
+    width: 160px;
+    height: 150px;
+    z-index: 7;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: 0;
+  }
+  .drawer {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    width: 220px;
+    padding: 10px 12px;
+    background: rgba(8, 12, 24, 0.86);
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    font: 500 11px/1.45 "IBM Plex Sans", sans-serif;
+    color: #c5d0e6;
+    display: none;
+    z-index: 9;
+  }
+  .drawer.open { display: block; }
+  .drawer h2 {
+    margin: 0 0 6px;
+    font: 600 12px/1 "IBM Plex Sans", sans-serif;
+  }
+  .drawer button {
+    margin-top: 8px;
+    background: #0f172a;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    padding: 4px 8px;
+    font: 600 10px/1 "IBM Plex Mono", ui-monospace, monospace;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="view">
+  <div class="stage" id="stage">
+    <img class="floor" src="../assets/floor.jpg" width="1280" height="720" alt="" />
+    <div class="layer dim"></div>
+    <div class="sprite shadow"></div>
+    <div class="sprite slime" id="slime"></div>
+    <div class="sprite mira" id="mira"></div>
+    <img class="layer chair-mask" src="sprites/mira-chair-mask.png" width="1280" height="720" alt="" />
+    <div class="fx mon-mira" id="monMira"><div class="scanline" id="scan"></div></div>
+    <div class="fx mon-kai" id="monKai"></div>
+    <div class="task-ping" id="ping"></div>
+    <div class="packet" id="packet">EVD</div>
+    <button class="hit" id="hit" type="button" aria-label="Mira station"></button>
+  </div>
+  <div class="hud">
+    <div class="live"><i></i>LIVE</div>
+    <div class="task" id="taskTitle">Watchlist forensics</div>
+    <div class="state" id="stateLabel">IDLE</div>
+    <div class="tape" id="tape">
+      <div>&nbsp;</div>
+      <div>&nbsp;</div>
+      <div>&nbsp;</div>
+    </div>
+    <div class="prog-wrap"><div class="prog" id="prog"></div></div>
+  </div>
+  <aside class="drawer" id="drawer">
+    <h2>Mira · research desk</h2>
+    <div>One-station animation proof. Other desks are inactive art.</div>
+    <button type="button" id="closeDrawer">Close</button>
+  </aside>
+</div>
+<script>
+(function () {
+  const MIRA_W = 56;
+  const SLIME_W = 28;
+  const FPS = 8;
+  const STEP = 1000 / FPS;
+  const mira = document.getElementById("mira");
+  const slime = document.getElementById("slime");
+  const scan = document.getElementById("scan");
+  const ping = document.getElementById("ping");
+  const packet = document.getElementById("packet");
+  const monKai = document.getElementById("monKai");
+  const stateLabel = document.getElementById("stateLabel");
+  const tape = document.getElementById("tape");
+  const prog = document.getElementById("prog");
+  const drawer = document.getElementById("drawer");
+
+  const events = ["", "", ""];
+  function pushEvent(text) {
+    events.shift();
+    events.push(text);
+    const lines = tape.children;
+    for (let i = 0; i < 3; i++) lines[i].textContent = events[i] || "\u00a0";
+  }
+
+  function miraFrame(i) {
+    mira.style.backgroundPosition = (-i * MIRA_W) + "px 0px";
+  }
+  function slimeFrame(i) {
+    slime.style.backgroundPosition = (-i * SLIME_W) + "px 0px";
+  }
+
+  /* Authored packet path in 1280 space, integer points. */
+  const PATH = [
+    [528, 126],
+    [548, 132],
+    [572, 136],
+    [598, 138],
+    [624, 140],
+    [646, 138]
+  ];
+
+  let started = 0;
+  let lastTick = -1;
+  let finished = false;
+  let received = false;
+  let handed = false;
+
+  function phase(t) {
+    if (t < 2000) return "IDLE";
+    if (t < 2400) return "RECEIVING";
+    if (t < 6500) return "WORKING";
+    if (t < 7500) return "HANDOFF";
+    return "SETTLE";
+  }
+
+  function frameAt(t) {
+    const tick = Math.floor(t / STEP);
+    if (tick === lastTick) return;
+    lastTick = tick;
+
+    const name = phase(t);
+    stateLabel.textContent = name === "SETTLE" ? "IDLE" : name;
+
+    if (name === "IDLE") {
+      miraFrame(tick % 16 === 11 ? 1 : 0);
+      slimeFrame(tick % 10 === 7 ? 1 : 0);
+      ping.style.opacity = "0";
+      packet.style.opacity = "0";
+      monKai.style.opacity = "0";
+      prog.style.width = "0px";
+    } else if (name === "RECEIVING") {
+      const i = t < 2200 ? 6 : 7;
+      miraFrame(i);
+      slimeFrame(0);
+      ping.style.opacity = "1";
+      if (!received) {
+        received = true;
+        pushEvent("Mira received watchlist forensics.");
+      }
+    } else if (name === "WORKING") {
+      const local = tick - Math.floor(2400 / STEP);
+      miraFrame(2 + (local % 4));
+      slimeFrame(2 + (local % 2));
+      ping.style.opacity = "0";
+      const p = Math.min(70, Math.round(((t - 2400) / 4100) * 70));
+      prog.style.width = p + "px";
+    } else if (name === "HANDOFF") {
+      const local = t - 6500;
+      miraFrame(local < 280 ? 8 : local < 640 ? 9 : 10);
+      slimeFrame(4);
+      const u = local / 1000;
+      const idx = Math.min(PATH.length - 1, Math.floor(u * (PATH.length - 1)));
+      packet.style.opacity = "1";
+      packet.style.left = PATH[idx][0] + "px";
+      packet.style.top = PATH[idx][1] + "px";
+      prog.style.width = "70px";
+    } else {
+      miraFrame(0);
+      slimeFrame(0);
+      packet.style.opacity = "0";
+      monKai.style.opacity = "1";
+      monKai.style.background = "rgba(103,232,249,0.16)";
+      ping.style.opacity = "0";
+      if (!handed) {
+        handed = true;
+        pushEvent("Evidence packet handed to Kai.");
+      }
+    }
+
+    /* Faint stepped scanline only. */
+    scan.style.top = ((tick * 2) % 28) + "px";
+  }
+
+  function loop(now) {
+    if (!started) started = now;
+    const t = now - started;
+    if (t >= 10000) {
+      frameAt(10000);
+      finished = true;
+      return;
+    }
+    frameAt(t);
+    requestAnimationFrame(loop);
+  }
+
+  document.getElementById("hit").addEventListener("click", function () {
+    drawer.classList.add("open");
+  });
+  document.getElementById("closeDrawer").addEventListener("click", function () {
+    drawer.classList.remove("open");
+  });
+
+  function start() {
+    started = 0;
+    lastTick = -1;
+    requestAnimationFrame(loop);
+  }
+  const extra = [
+    "sprites/mira-sheet.png",
+    "sprites/scanslime-sheet.png",
+    "sprites/contact-shadow.png"
+  ].map(function (src) {
+    const im = new Image();
+    im.src = src;
+    return im;
+  });
+  const imgs = Array.prototype.slice.call(document.images).concat(extra);
+  let pending = imgs.length;
+  function oneDone() {
+    pending -= 1;
+    if (!pending) start();
+  }
+  imgs.forEach(function (img) {
+    if (img.complete) oneDone();
+    else {
+      img.addEventListener("load", oneDone);
+      img.addEventListener("error", oneDone);
+    }
+  });
+})();
+</script>
+</body>
+</html>
