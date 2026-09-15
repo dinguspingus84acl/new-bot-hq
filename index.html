@@ -210,8 +210,8 @@ header.top h1 {
   transform: translate(-50%, -100%);
   pointer-events: none;
 }
-.runner { width: 86px; height: 118px; }
-.critter { width: 58px; height: 58px; }
+.runner { width: 70px; height: 96px; }
+.critter { width: 44px; height: 44px; }
 .shadow {
   position: absolute;
   left: 50%;
@@ -251,19 +251,25 @@ header.top h1 {
   image-rendering: crisp-edges;
 }
 .actor.face-left img { transform: scaleX(-1); }
-.label {
+.label { display: none; }
+.status-chip {
   position: absolute;
-  left: 50%;
-  top: calc(100% + 1px);
   transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(8, 12, 24, 0.55);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  pointer-events: none;
   white-space: nowrap;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: rgba(8, 12, 24, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.12);
 }
+.chip-name { color: var(--ink); opacity: 0.9; }
+.chip-ico { font-size: 8px; opacity: 0.9; }
 .stations { position: absolute; inset: 0; z-index: 6; }
 .station-hit {
   position: absolute;
@@ -370,23 +376,6 @@ header.top h1 {
 .station.status-failed .progress-strip > i { background: var(--red); }
 .station.status-waiting .progress-strip > i,
 .station.status-needs_approval .progress-strip > i { background: var(--amber); }
-.status-chip {
-  position: absolute;
-  transform: translateX(-50%);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(8, 12, 24, 0.86);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  pointer-events: none;
-  white-space: nowrap;
-}
-.chip-ico { font-size: 9px; }
 .station.status-blocked .station-hit {
   border-color: rgba(248, 113, 113, 0.7);
   box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.45);
@@ -648,8 +637,8 @@ footer {
   .live-cell { grid-column: 1 / -1; }
 }
 @media (max-width: 720px) {
-  .runner { width: 66px; height: 90px; }
-  .critter { width: 46px; height: 46px; }
+  .runner { width: 56px; height: 76px; }
+  .critter { width: 38px; height: 38px; }
   header.top h1 { font-size: 1.25rem; }
   .cmdbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cmdbar .cell:last-child { grid-column: 1 / -1; }
@@ -694,7 +683,7 @@ footer {
 
   <div class="board">
     <div class="stage-wrap" id="stage">
-      <img class="floor-bg" src="assets/floor.jpg" alt="Pixel art HQ office floor" />
+      <img class="floor-bg" src="assets/floor.jpg?seated" alt="Pixel art HQ office floor" />
       <div class="ambient" id="ambient"></div>
       <svg class="routes" id="routes" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
       <div class="vignette"></div>
@@ -753,7 +742,7 @@ footer {
   <ul class="events-mini" id="d-events"></ul>
 </aside>
 
-<script src="office-nav.js"></script>
-<script src="office-sim.js"></script>
+<script src="office-nav.js?v=seated2"></script>
+<script src="office-sim.js?v=seated2"></script>
 </body>
 </html>

@@ -125,4 +125,10 @@ const assert = require("assert");
   assert.strictEqual(m.updatedAt, "2026-09-13T21:16:00Z");
 })();
 
+(function shortNames() {
+  assert.strictEqual(nav.shortName({ id: "cluster", character: "Kai Desk" }), "Kai");
+  assert.strictEqual(nav.shortName({ id: "coord", character: "New Bot" }), "New Bot");
+  assert.ok(!/Desk/i.test(nav.shortName({ id: "cluster" })));
+})();
+
 console.log("office-nav tests ok");

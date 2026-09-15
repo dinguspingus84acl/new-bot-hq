@@ -1,6 +1,6 @@
 {
   "schema": "rclab.office_dashboard.v1",
-  "updated_at_utc": "2026-09-13T21:16:00Z",
+  "updated_at_utc": "2026-09-15T18:40:00Z",
   "bot_name": "New Bot",
   "mode": "PAPER_RESEARCH_ONLY",
   "office_mood": "focused",
@@ -8,16 +8,16 @@
   "repo": "dinguspingus84acl/new-bot-hq",
   "hosted_on": "github-pages",
   "stations": [
-    {"id":"coord","character":"New Bot","role":"Floor lead","emoji":"🤖","color":"#fda4af","task":"Coordinate + report to Jack","stage":"Deep brief ready · HQ polish still shipping","progress":0.9,"state":"working","desk":0,"creature":"Bunbot","creature_id":"bunbot","creature_species":"floor bunny-bot"},
-    {"id":"deep","character":"Mira","role":"Forensics lead","emoji":"🕵️","color":"#7dd3fc","task":"Deep analysis — 5 watchlist tokens","stage":"DONE · packets in deep_20260913/","progress":1.0,"state":"done","desk":1,"creature":"Scanslime","creature_id":"scanslime","creature_species":"probe slime"},
-    {"id":"cluster","character":"Kai Desk","role":"Cluster analyst","emoji":"🧩","color":"#c4b5fd","task":"Early-buyer cluster module (Kaishen-style)","stage":"Demo done · 15 CROSS_COIN_REPEAT_BUYER · 1 assoc hyp","progress":1.0,"state":"done","desk":2,"creature":"Foldfox","creature_id":"foldfox","creature_species":"origami fox"},
-    {"id":"watch","character":"Oak","role":"Watch floor","emoji":"👀","color":"#86efac","task":"Paper watchlist ($bucket $Many $route $par $raxol)","stage":"4/5 runners ≥$500k vendor MC ($par just under)","progress":1.0,"state":"idle","desk":3,"creature":"Voltbug","creature_id":"voltbug","creature_species":"spark beetle"},
-    {"id":"lab","character":"Rex","role":"Lab archivist","emoji":"📚","color":"#fcd34d","task":"Alpha lab run rclab-…a8c7cb68","stage":"Phases 0–10 parked · archive live","progress":1.0,"state":"idle","desk":4,"creature":"Archivowl","creature_id":"archivowl","creature_species":"ledger owl"}
+    {"id":"coord","character":"New Bot","role":"Floor lead","emoji":"🤖","color":"#fda4af","task":"Coordinate + report to Jack","stage":"Command center live · waiting on Jack","progress":0.9,"state":"working","desk":0,"creature":"Bunbot","creature_id":"bunbot","creature_species":"floor bunny-bot"},
+    {"id":"deep","character":"Mira","role":"Forensics lead","emoji":"🕵️","color":"#7dd3fc","task":"Watchlist forensics (5 tokens)","stage":"Packets archived","progress":1.0,"state":"done","desk":1,"creature":"Scanslime","creature_id":"scanslime","creature_species":"probe slime"},
+    {"id":"cluster","character":"Kai","role":"Cluster analyst","emoji":"🧩","color":"#c4b5fd","task":"Early-buyer cluster module","stage":"Parked after demo","progress":1.0,"state":"idle","desk":2,"creature":"Foldfox","creature_id":"foldfox","creature_species":"origami fox"},
+    {"id":"watch","character":"Oak","role":"Watch floor","emoji":"👀","color":"#86efac","task":"Paper watchlist","stage":"Monitoring · no alerts","progress":1.0,"state":"idle","desk":3,"creature":"Voltbug","creature_id":"voltbug","creature_species":"spark beetle"},
+    {"id":"lab","character":"Rex","role":"Lab archivist","emoji":"📚","color":"#fcd34d","task":"Alpha lab archive","stage":"Ledger parked","progress":1.0,"state":"idle","desk":4,"creature":"Archivowl","creature_id":"archivowl","creature_species":"ledger owl"}
   ],
   "ticker": [
-    "Deep packets ready for all 5 watchlist tokens",
-    "MANY HIGH dump · RAXOL MED + upgradeable proxy",
-    "Shared bot/MM candidates on all five (non-merge)",
+    "Command center live — paper research only",
+    "Watchlist packets archived",
+    "No alerts on the watch floor",
     "Paper only — no trades"
   ]
 }
